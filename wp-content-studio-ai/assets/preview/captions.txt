@@ -1,0 +1,6 @@
+preview-hero.jpg: Dashboard hero with features summary
+preview-features.jpg: Feature highlights and compliance overview
+preview-single-post.jpg: Generate long description in post editor
+preview-bulk.jpg: Bulk generation with progress and controls
+preview-woocommerce.jpg: WooCommerce product description generation
+preview-settings.jpg: Plugin settings and API configuration

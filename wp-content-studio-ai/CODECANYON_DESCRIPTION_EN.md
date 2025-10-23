@@ -1,12 +1,12 @@
-# WP Gemini Content Generator – AI-Powered SEO Content for WordPress and Woocommerce
+# WP Content Studio AI – AI-Powered SEO Content for WordPress and WooCommerce
 
-**Transform your WordPress content creation with AI-generated, SEO-optimized descriptions using Google's Gemini AI. Generate 2000+ character descriptions for posts, pages, and WooCommerce products with just one click.**
+**Transform your WordPress content creation with AI-generated, SEO-optimized descriptions. Generate 2000+ character descriptions for posts, pages, and WooCommerce products with just one click.**
 
 ## 🚀 **Key Features**
 
 ### **AI-Powered Content Generation**
 - Generate 2000+ character SEO-friendly descriptions instantly
-- Powered by Google's advanced Gemini AI technology
+- Powered by AI models
 - Smart content tailored for posts, pages, and WooCommerce products
 - Professional, engaging content that converts
 
@@ -52,7 +52,7 @@
 
 ### **Simple 3-Step Process:**
 1. **Install & Activate** the plugin
-2. **Add Your Gemini API Key** (free from Google AI Studio)
+2. **Add Your API Key** (from your AI provider)
 3. **Generate Content** with one click from any post/page
 
 ### **Single Post Generation:**
@@ -62,7 +62,7 @@
 - Content is automatically inserted into your post
 
 ### **Bulk Generation:**
-- Go to Settings → Gemini Generator
+- Go to Settings → Content Studio AI
 - Set batch size and click "Run Bulk Generation"
 - Plugin processes multiple posts automatically
 - Perfect for updating existing content
@@ -91,15 +91,15 @@
 
 - **WordPress:** 6.0 or higher
 - **PHP:** 7.4 or higher
-- **Google Gemini API Key:** Free from Google AI Studio
+- **API Key:** Google Gemini — get it at https://aistudio.google.com/u/7/api-keys
 - **Internet Connection:** For AI API calls
 
 ## 🛠 **Installation & Setup**
 
 1. **Upload** the plugin to your WordPress site
 2. **Activate** through the Plugins menu
-3. **Get API Key:** Visit [Google AI Studio](https://aistudio.google.com/u/3/api-keys)
-4. **Configure:** Go to Settings → Gemini Generator
+3. **Get API Key:** Visit Google AI Studio → https://aistudio.google.com/u/7/api-keys
+4. **Configure:** Go to Settings → Content Studio AI
 5. **Start Creating:** Generate content for any post or page
 
 ## 💡 **Use Cases**
@@ -150,7 +150,7 @@
 - **CodeCanyon Support:** Direct support through the platform
 - **Regular Updates:** Continuous improvements and new features
 
-## 🏆 **Why Choose WP Gemini Content Generator?**
+## 🏆 **Why Choose WP Content Studio AI?**
 
 ### **✅ Proven Results**
 - Generate high-quality content in seconds
@@ -173,7 +173,7 @@
 ### **✅ Cost Effective**
 - One-time purchase, lifetime updates
 - No monthly subscriptions
-- Free Google Gemini API (with usage limits)
+- Uses AI content APIs (usage limits may apply)
 - Significant time savings
 
 ## 🚀 **Get Started Today**

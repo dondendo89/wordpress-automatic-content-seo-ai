@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#0f1320"/>
+  <text x="640" y="80" font-family="Arial" font-size="40" fill="#ffffff" text-anchor="middle" font-weight="700">Bulk Generation</text>
+  <g transform="translate(180,140)">
+    <rect width="920" height="460" rx="16" fill="#141a2a" stroke="#2742ff"/>
+    <text x="20" y="40" font-size="22" fill="#9fd3ff">Status</text>
+    <rect x="20" y="70" width="880" height="16" rx="8" fill="#22345a"/>
+    <rect x="20" y="70" width="520" height="16" rx="8" fill="#2b5bff"/>
+    <text x="910" y="83" font-size="14" fill="#9fd3ff" text-anchor="end">59% complete</text>
+    <text x="20" y="120" font-size="18" fill="#e6e6e6">• Posts processed: 118 / 200</text>
+    <text x="20" y="150" font-size="18" fill="#e6e6e6">• Skipped: 12 (already generated)</text>
+    <text x="20" y="180" font-size="18" fill="#e6e6e6">• Errors: 0</text>
+    <rect x="20" y="240" width="180" height="40" rx="8" fill="#2b5bff"/>
+    <text x="110" y="266" font-size="16" fill="#fff" text-anchor="middle">Pause</text>
+    <rect x="220" y="240" width="180" height="40" rx="8" fill="#1f2b45" stroke="#2b5bff"/>
+    <text x="310" y="266" font-size="16" fill="#9fd3ff" text-anchor="middle">Stop</text>
+  </g>
+</svg>

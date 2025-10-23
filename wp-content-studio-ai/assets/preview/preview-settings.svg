@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#eef3f8"/>
+  <text x="640" y="80" font-family="Arial" font-size="40" fill="#333" text-anchor="middle" font-weight="700">Plugin Settings</text>
+  <g transform="translate(200,120)">
+    <rect width="880" height="520" rx="16" fill="#ffffff" stroke="#dbe3ea"/>
+    <text x="30" y="50" font-size="22" fill="#333">API Configuration</text>
+    <rect x="30" y="70" width="540" height="40" rx="8" fill="#f6f9fd" stroke="#e3edf7"/>
+    <text x="40" y="96" font-size="16" fill="#666">API Key</text>
+    <rect x="600" y="70" width="120" height="40" rx="8" fill="#2b5bff"/>
+    <text x="660" y="96" font-size="16" fill="#fff" text-anchor="middle">Save</text>
+    <text x="30" y="140" font-size="22" fill="#333">Generation Options</text>
+    <text x="40" y="170" font-size="16" fill="#666">Language: Auto</text>
+    <text x="40" y="200" font-size="16" fill="#666">Tone: Balanced</text>
+    <text x="40" y="230" font-size="16" fill="#666">Min length: 2000 chars</text>
+    <text x="40" y="260" font-size="16" fill="#666">Append emojis: Off</text>
+    <rect x="30" y="300" width="180" height="40" rx="8" fill="#2b5bff"/>
+    <text x="120" y="326" font-size="16" fill="#fff" text-anchor="middle">Test Generation</text>
+  </g>
+</svg>

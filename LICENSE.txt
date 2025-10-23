@@ -1,0 +1,10 @@
+WP Content Studio AI – License Notice
+
+This plugin is licensed under the GNU General Public License, version 2 (GPL-2.0), or any later version.
+
+You are free to copy, distribute, and modify this software under the terms of the GNU GPL.
+
+Full License Text:
+https://www.gnu.org/licenses/gpl-2.0.html
+
+Copyright holders retain copyright to their respective contributions.

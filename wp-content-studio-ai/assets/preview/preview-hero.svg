@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0073aa"/>
+      <stop offset="100%" stop-color="#6a00ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#g)"/>
+  <rect x="60" y="60" width="1160" height="600" rx="24" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.25)"/>
+  <text x="640" y="180" font-family="Arial, Helvetica, sans-serif" font-size="48" fill="#ffffff" text-anchor="middle" font-weight="700">WP Content Studio AI</text>
+  <text x="640" y="240" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#e6e6e6" text-anchor="middle">AI-Powered SEO Content for WordPress</text>
+  <text x="640" y="300" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#ffffff" text-anchor="middle">Generate long, SEO-friendly descriptions for posts, pages, and products</text>
+  <g transform="translate(220,380)">
+    <rect x="0" y="0" width="280" height="220" rx="16" fill="#ffffff" opacity="0.15"/>
+    <text x="20" y="40" font-size="20" fill="#ffffff" font-weight="600">Key Features</text>
+    <text x="20" y="80" font-size="18" fill="#e6e6e6">• AI content generation</text>
+    <text x="20" y="110" font-size="18" fill="#e6e6e6">• SEO optimized (2000+ chars)</text>
+    <text x="20" y="140" font-size="18" fill="#e6e6e6">• Multi-language</text>
+    <text x="20" y="170" font-size="18" fill="#e6e6e6">• Bulk processing</text>
+  </g>
+  <g transform="translate(520,380)">
+    <rect x="0" y="0" width="280" height="220" rx="16" fill="#ffffff" opacity="0.15"/>
+    <text x="20" y="40" font-size="20" fill="#ffffff" font-weight="600">Integrations</text>
+    <text x="20" y="80" font-size="18" fill="#e6e6e6">• WordPress posts/pages</text>
+    <text x="20" y="110" font-size="18" fill="#e6e6e6">• WooCommerce products</text>
+    <text x="20" y="140" font-size="18" fill="#e6e6e6">• Secure nonces</text>
+    <text x="20" y="170" font-size="18" fill="#e6e6e6">• Capability checks</text>
+  </g>
+  <g transform="translate(820,380)">
+    <rect x="0" y="0" width="280" height="220" rx="16" fill="#ffffff" opacity="0.15"/>
+    <text x="20" y="40" font-size="20" fill="#ffffff" font-weight="600">Compliance</text>
+    <text x="20" y="80" font-size="18" fill="#e6e6e6">• Clean uninstall</text>
+    <text x="20" y="110" font-size="18" fill="#e6e6e6">• i18n ready</text>
+    <text x="20" y="140" font-size="18" fill="#e6e6e6">• Documentation included</text>
+    <text x="20" y="170" font-size="18" fill="#e6e6e6">• GPL-2.0-or-later</text>
+  </g>
+</svg>

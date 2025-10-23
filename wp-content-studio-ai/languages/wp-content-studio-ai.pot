@@ -1,0 +1,137 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Content Studio AI 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-23 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Trae AI\n"
+"X-Domain: wp-content-studio-ai\n"
+
+#: wp-content-studio-ai.php:38
+msgid "API Settings"
+msgstr ""
+
+#: wp-content-studio-ai.php:50
+msgid "API Key"
+msgstr ""
+
+#: wp-content-studio-ai.php:60
+msgid "Content Language"
+msgstr ""
+
+#: wp-content-studio-ai.php:70
+msgid "Enable on Post Types"
+msgstr ""
+
+#: wp-content-studio-ai.php:80
+msgid "Content Mode"
+msgstr ""
+
+#: wp-content-studio-ai.php:90
+msgid "Emoji & Icons"
+msgstr ""
+
+#: wp-content-studio-ai.php:101
+msgid "Configure your API key to enable content generation."
+msgstr ""
+
+#: wp-content-studio-ai.php:182
+msgid "Your API key. Stored in WordPress options."
+msgstr ""
+
+#: wp-content-studio-ai.php:183
+msgid "Refer to your AI provider to obtain an API key."
+msgstr ""
+
+#: wp-content-studio-ai.php:209
+msgid "Select the language for generated content."
+msgstr ""
+
+#: wp-content-studio-ai.php:233
+msgid "Replace existing content (recommended)"
+msgstr ""
+
+#: wp-content-studio-ai.php:238
+msgid "Append to existing content"
+msgstr ""
+
+#: wp-content-studio-ai.php:241
+msgid "Choose how to handle existing content when generating new descriptions."
+msgstr ""
+
+#: wp-content-studio-ai.php:263
+msgid "Content Studio AI"
+msgstr ""
+
+#: wp-content-studio-ai.php:272
+msgid "Bulk Update Posts/Pages"
+msgstr ""
+
+#: wp-content-studio-ai.php:274
+msgid "Batch size (per request):"
+msgstr ""
+
+#: wp-content-studio-ai.php:286
+msgid "Force regenerate (include already processed posts)"
+msgstr ""
+
+#: wp-content-studio-ai.php:287
+msgid "Run Bulk Generation"
+msgstr ""
+
+#: wp-content-studio-ai.php:303
+msgid "Content Studio AI"
+msgstr ""
+
+#: wp-content-studio-ai.php:311
+msgid "Generate a 2000+ character product description based on the title and insert it into the content."
+msgstr ""
+
+#: wp-content-studio-ai.php:313
+msgid "Generate a 2000+ character description based on the title and insert it into the content."
+msgstr ""
+
+#: wp-content-studio-ai.php:330
+msgid "Generated Description Preview:"
+msgstr ""
+
+#: wp-content-studio-ai.php:336
+msgid "Content will replace the existing content."
+msgstr ""
+
+#: wp-content-studio-ai.php:338
+msgid "Content will be appended to the end of the editor content."
+msgstr ""
+
+#: wp-content-studio-ai.php:610
+msgid "Permission denied."
+msgstr ""
+
+#: wp-content-studio-ai.php:618
+msgid "Invalid post."
+msgstr ""
+
+#: wp-content-studio-ai.php:635
+msgid "Generated text is shorter than 2000 characters. Try again."
+msgstr ""
+
+#: wp-content-studio-ai.php:644
+msgid "Content generated and inserted."
+msgstr ""
+
+#: wp-content-studio-ai.php:645
+msgid "Missing API key. Please set it in settings."
+msgstr ""
+
+#: wp-content-studio-ai.php:683
+msgid "No posts found to process. Debug: Total posts in selected types: %d, Post types: %s"
+msgstr ""
+
+#: wp-content-studio-ai.php:717
+msgid "Bulk generation job started. Processing in background..."
+msgstr ""

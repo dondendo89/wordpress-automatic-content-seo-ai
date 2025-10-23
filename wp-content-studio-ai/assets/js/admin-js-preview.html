@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>admin.js Preview</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding: 20px; }
+    .wrap { max-width: 740px; margin: 0 auto; }
+    .button { display: inline-block; padding: 8px 12px; background: #2271b1; color: #fff; border-radius: 3px; text-decoration: none; border: 0; cursor: pointer; }
+    .button[disabled] { opacity: 0.6; cursor: not-allowed; }
+    .spinner.is-active { display: inline-block; width: 16px; height: 16px; border: 2px solid #ccd0d4; border-top-color: #2271b1; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .notice { border-left: 4px solid; padding: 10px; margin: 10px 0; background: #fff; }
+    .notice-success { border-color: #46b450; }
+    .notice-error { border-color: #dc3232; }
+    .notice .notice-dismiss { float: right; border: 0; background: transparent; cursor: pointer; }
+    #wgc-preview { display: none; margin-top: 16px; }
+    #wgc-preview-content { border: 1px solid #ccd0d4; padding: 10px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>admin.js Inline Notice Preview</h1>
+    <p>This lightweight preview lets you verify inline notices without WordPress.</p>
+
+    <button class="button button-primary wgc-generate" data-post-id="123" data-nonce="preview-nonce">Generate</button>
+
+    <div id="wgc-preview">
+      <h2>Preview</h2>
+      <div id="wgc-preview-content"></div>
+    </div>
+
+    <div id="wgc-bulk-status" style="margin-top: 20px;"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+    window.WGC = {
+      ajaxUrl: '/does-not-exist',
+      i18n: { generating: 'Generating...', done: 'Done' }
+    };
+  </script>
+  <script src="./admin.js"></script>
+</body>
+</html>

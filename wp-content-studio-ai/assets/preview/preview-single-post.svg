@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#f5f7fb"/>
+  <rect x="80" y="60" width="1120" height="600" rx="12" fill="#ffffff" stroke="#d9dfe7"/>
+  <rect x="100" y="90" width="1080" height="60" rx="8" fill="#eef2f7"/>
+  <text x="120" y="130" font-family="Arial" font-size="22" fill="#333">Edit Post — WordPress Admin</text>
+  <rect x="100" y="170" width="700" height="380" rx="8" fill="#fcfdff" stroke="#e8edf3"/>
+  <text x="120" y="200" font-size="18" fill="#333">Content</text>
+  <text x="120" y="230" font-size="16" fill="#666">Lorem ipsum dolor sit amet, AI-generated long description…</text>
+  <rect x="840" y="170" width="340" height="200" rx="8" fill="#fcfdff" stroke="#e8edf3"/>
+  <text x="860" y="200" font-size="18" fill="#333">WP Content Studio AI</text>
+  <rect x="860" y="230" width="300" height="44" rx="8" fill="#2b5bff"/>
+  <text x="1010" y="260" font-size="16" fill="#fff" text-anchor="middle">Generate Long Description</text>
+  <rect x="860" y="290" width="300" height="30" rx="6" fill="#eef3ff" stroke="#cfe0ff"/>
+  <text x="870" y="310" font-size="14" fill="#333">Language: Auto • Mode: Balanced</text>
+  <rect x="100" y="570" width="160" height="40" rx="8" fill="#2b5bff"/>
+  <text x="180" y="596" font-size="16" fill="#fff" text-anchor="middle">Update</text>
+</svg>

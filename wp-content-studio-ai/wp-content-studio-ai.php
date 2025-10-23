@@ -1,12 +1,15 @@
 <?php
 /**
- * Plugin Name:       WP Gemini Content Generator
- * Description:       Generate 2000+ character descriptions for posts/pages using the Gemini API. Includes settings to store API key and bulk update.
- * Version:           1.0.0
- * Author:            WP Gemini Content Generator
- * Text Domain:       wp-gemini-content-generator
+ * Plugin Name:       WP Content Studio AI
+ * Plugin URI:        https://example.com/wp-content-studio-ai
+ * Description:       AI-powered long descriptions for WordPress and WooCommerce using AI content APIs.
+ * Version:           1.0.1
+ * Author:            WP Content Studio AI
+ * Author URI:        https://example.com
+ * Text Domain:       wp-content-studio-ai
  * Domain Path:       /languages
  * Requires at least: 6.0
+ * Tested up to:      6.6
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -36,16 +39,21 @@ class WPGeminiContentGenerator {
 		// AJAX actions for single generate and bulk generate
 		add_action( 'wp_ajax_wgc_generate_for_post', [ $this, 'ajax_generate_for_post' ] );
 		add_action( 'wp_ajax_wgc_bulk_generate', [ $this, 'ajax_bulk_generate' ] );
+		add_action( 'wp_ajax_wgc_bulk_status', [ $this, 'ajax_bulk_status' ] );
+		
+		// Cron job for background processing
+		add_action( 'wgc_bulk_process_job', [ $this, 'process_bulk_job' ] );
+		add_action( 'init', [ $this, 'schedule_bulk_job' ] );
 	}
 
 	public function load_textdomain() {
-		load_plugin_textdomain( 'wp-gemini-content-generator', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+		load_plugin_textdomain( 'wp-content-studio-ai', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 	}
 
 	public function register_settings_page() {
 		add_options_page(
-			__( 'Gemini Content Generator', 'wp-gemini-content-generator' ),
-			__( 'Gemini Generator', 'wp-gemini-content-generator' ),
+			__( 'Content Studio AI', 'wp-content-studio-ai' ),
+			__( 'Content Studio AI', 'wp-content-studio-ai' ),
 			'manage_options',
 			'wgc-settings',
 			[ $this, 'render_settings_page' ]
@@ -85,16 +93,16 @@ class WPGeminiContentGenerator {
 
 		add_settings_section(
 			'wgc_api_section',
-			__( 'API Settings', 'wp-gemini-content-generator' ),
+			__( 'API Settings', 'wp-content-studio-ai' ),
 			function () {
-				echo '<p>' . esc_html__( 'Configure your Gemini API key to enable content generation.', 'wp-gemini-content-generator' ) . '</p>';
+				echo '<p>' . esc_html__( 'Configure your API key to enable content generation.', 'wp-content-studio-ai' ) . '</p>';
 			},
 			'wgc-settings'
 		);
 
 		add_settings_field(
 			'wgc_api_key',
-			__( 'Gemini API Key', 'wp-gemini-content-generator' ),
+			__( 'Gemini API Key', 'wp-content-studio-ai' ),
 			[ $this, 'render_api_key_field' ],
 			'wgc-settings',
 			'wgc_api_section'
@@ -102,7 +110,7 @@ class WPGeminiContentGenerator {
 
 		add_settings_field(
 			'wgc_language',
-			__( 'Content Language', 'wp-gemini-content-generator' ),
+			__( 'Content Language', 'wp-content-studio-ai' ),
 			[ $this, 'render_language_field' ],
 			'wgc-settings',
 			'wgc_api_section'
@@ -110,7 +118,7 @@ class WPGeminiContentGenerator {
 
 		add_settings_field(
 			'wgc_post_types',
-			__( 'Enable on Post Types', 'wp-gemini-content-generator' ),
+			__( 'Enable on Post Types', 'wp-content-studio-ai' ),
 			[ $this, 'render_post_types_field' ],
 			'wgc-settings',
 			'wgc_api_section'
@@ -118,7 +126,7 @@ class WPGeminiContentGenerator {
 
 		add_settings_field(
 			'wgc_append_mode',
-			__( 'Content Mode', 'wp-gemini-content-generator' ),
+			__( 'Content Mode', 'wp-content-studio-ai' ),
 			[ $this, 'render_append_mode_field' ],
 			'wgc-settings',
 			'wgc_api_section'
@@ -126,7 +134,7 @@ class WPGeminiContentGenerator {
 
 		add_settings_field(
 			'wgc_emoji_icons',
-			__( 'Emoji & Icons', 'wp-gemini-content-generator' ),
+			__( 'Emoji & Icons', 'wp-content-studio-ai' ),
 			[ $this, 'render_emoji_icons_field' ],
 			'wgc-settings',
 			'wgc_api_section'
@@ -172,27 +180,27 @@ class WPGeminiContentGenerator {
 	}
 
 	public function render_api_key_field() {
-		$api_key = get_option( WGC_OPTION_API_KEY, '' );
+		$api_key = (string) get_option( 'wgc_ai_studio_api_key', get_option( WGC_OPTION_API_KEY, '' ) );
 		echo '<input type="password" style="width: 420px;" name="' . esc_attr( WGC_OPTION_API_KEY ) . '" value="' . esc_attr( $api_key ) . '" placeholder="AIza..." />';
-		echo '<p class="description">' . esc_html__( 'Your Google Gemini API key. Stored in WordPress options.', 'wp-gemini-content-generator' ) . '</p>';
-		echo '<p class="description"><a href="https://aistudio.google.com/u/3/api-keys" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Create your Gemini API Key here', 'wp-gemini-content-generator' ) . '</a> 🔗</p>';
+		echo '<p class="description">' . esc_html__( 'Your Gemini API key. Stored in WordPress options.', 'wp-content-studio-ai' ) . '</p>';
+		echo '<p class="description"><a href="https://aistudio.google.com/u/7/api-keys" target="_blank" rel="nofollow noopener">Google AI Studio — Get Gemini API key</a></p>';
 	}
 
 	public function render_language_field() {
 		$language = get_option( WGC_OPTION_LANGUAGE, 'en' );
 		$languages = [
-			'en' => __( 'English', 'wp-gemini-content-generator' ),
-			'it' => __( 'Italian', 'wp-gemini-content-generator' ),
-			'es' => __( 'Spanish', 'wp-gemini-content-generator' ),
-			'fr' => __( 'French', 'wp-gemini-content-generator' ),
-			'de' => __( 'German', 'wp-gemini-content-generator' ),
-			'pt' => __( 'Portuguese', 'wp-gemini-content-generator' ),
-			'ru' => __( 'Russian', 'wp-gemini-content-generator' ),
-			'ja' => __( 'Japanese', 'wp-gemini-content-generator' ),
-			'ko' => __( 'Korean', 'wp-gemini-content-generator' ),
-			'zh' => __( 'Chinese', 'wp-gemini-content-generator' ),
-			'ar' => __( 'Arabic', 'wp-gemini-content-generator' ),
-			'hi' => __( 'Hindi', 'wp-gemini-content-generator' ),
+			'en' => __( 'English', 'wp-content-studio-ai' ),
+			'it' => __( 'Italian', 'wp-content-studio-ai' ),
+			'es' => __( 'Spanish', 'wp-content-studio-ai' ),
+			'fr' => __( 'French', 'wp-content-studio-ai' ),
+			'de' => __( 'German', 'wp-content-studio-ai' ),
+			'pt' => __( 'Portuguese', 'wp-content-studio-ai' ),
+			'ru' => __( 'Russian', 'wp-content-studio-ai' ),
+			'ja' => __( 'Japanese', 'wp-content-studio-ai' ),
+			'ko' => __( 'Korean', 'wp-content-studio-ai' ),
+			'zh' => __( 'Chinese', 'wp-content-studio-ai' ),
+			'ar' => __( 'Arabic', 'wp-content-studio-ai' ),
+			'hi' => __( 'Hindi', 'wp-content-studio-ai' ),
 		];
 		
 		echo '<select name="' . esc_attr( WGC_OPTION_LANGUAGE ) . '" style="width: 200px;">';
@@ -201,7 +209,7 @@ class WPGeminiContentGenerator {
 			echo '<option value="' . esc_attr( $code ) . '"' . $selected . '>' . esc_html( $name ) . '</option>';
 		}
 		echo '</select>';
-		echo '<p class="description">' . esc_html__( 'Select the language for generated content.', 'wp-gemini-content-generator' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Select the language for generated content.', 'wp-content-studio-ai' ) . '</p>';
 	}
 
 	public function render_post_types_field() {
@@ -217,7 +225,7 @@ class WPGeminiContentGenerator {
 			echo '</label>';
 		}
 		echo '</div>';
-		echo '<p class="description">' . esc_html__( 'Select which post types should have the Gemini Content Generator meta box.', 'wp-gemini-content-generator' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Select which post types should have the Content Studio AI meta box.', 'wp-content-studio-ai' ) . '</p>';
 	}
 
 	public function render_append_mode_field() {
@@ -225,15 +233,15 @@ class WPGeminiContentGenerator {
 		
 		echo '<label style="display: block; margin: 5px 0;">';
 		echo '<input type="radio" name="' . esc_attr( WGC_OPTION_APPEND_MODE ) . '" value="replace" ' . checked( $append_mode, 'replace', false ) . ' /> ';
-		echo esc_html__( 'Replace existing content (recommended)', 'wp-gemini-content-generator' );
+		echo esc_html__( 'Replace existing content (recommended)', 'wp-content-studio-ai' );
 		echo '</label>';
 		
 		echo '<label style="display: block; margin: 5px 0;">';
 		echo '<input type="radio" name="' . esc_attr( WGC_OPTION_APPEND_MODE ) . '" value="append" ' . checked( $append_mode, 'append', false ) . ' /> ';
-		echo esc_html__( 'Append to existing content', 'wp-gemini-content-generator' );
+		echo esc_html__( 'Append to existing content', 'wp-content-studio-ai' );
 		echo '</label>';
 		
-		echo '<p class="description">' . esc_html__( 'Choose how to handle existing content when generating new descriptions.', 'wp-gemini-content-generator' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Choose how to handle existing content when generating new descriptions.', 'wp-content-studio-ai' ) . '</p>';
 	}
 
 	public function render_emoji_icons_field() {
@@ -241,10 +249,10 @@ class WPGeminiContentGenerator {
 		
 		echo '<label style="display: block; margin: 5px 0;">';
 		echo '<input type="checkbox" name="' . esc_attr( WGC_OPTION_EMOJI_ICONS ) . '" value="1" ' . checked( $emoji_icons, true, false ) . ' /> ';
-		echo esc_html__( 'Enable emoji and icons in generated content', 'wp-gemini-content-generator' );
+		echo esc_html__( 'Enable emoji and icons in generated content', 'wp-content-studio-ai' );
 		echo '</label>';
 		
-		echo '<p class="description">' . esc_html__( 'Add emoji and icons to make the content more engaging and visually appealing.', 'wp-gemini-content-generator' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Add emoji and icons to make the content more engaging and visually appealing.', 'wp-content-studio-ai' ) . '</p>';
 	}
 
 	public function render_settings_page() {
@@ -255,19 +263,31 @@ class WPGeminiContentGenerator {
 		$nonce = wp_create_nonce( 'wgc_bulk_nonce' );
 
 		echo '<div class="wrap">';
-		echo '<h1>' . esc_html__( 'Gemini Content Generator', 'wp-gemini-content-generator' ) . '</h1>';
+		echo '<h1>' . esc_html__( 'Content Studio AI', 'wp-content-studio-ai' ) . '</h1>';
 
 		echo '<form method="post" action="options.php">';
 		settings_fields( 'wgc_settings_group' );
 		do_settings_sections( 'wgc-settings' );
-		submit_button( __( 'Save Settings', 'wp-gemini-content-generator' ) );
+		submit_button( __( 'Save Settings', 'wp-content-studio-ai' ) );
 		echo '</form>';
 
 		echo '<hr />';
-		echo '<h2>' . esc_html__( 'Bulk Update Posts/Pages', 'wp-gemini-content-generator' ) . '</h2>';
-		echo '<p>' . esc_html__( 'Generate and insert long descriptions for multiple posts and pages. The tool will skip items already processed.', 'wp-gemini-content-generator' ) . '</p>';
-		echo '<p><label>' . esc_html__( 'Batch size (per request):', 'wp-gemini-content-generator' ) . ' <input id="wgc-batch-size" type="number" min="1" max="20" value="5" /></label></p>';
-		echo '<p><button class="button button-primary" id="wgc-bulk-generate" data-nonce="' . esc_attr( $nonce ) . '">' . esc_html__( 'Run Bulk Generation', 'wp-gemini-content-generator' ) . '</button> <span id="wgc-bulk-status"></span></p>';
+		echo '<h2>' . esc_html__( 'Bulk Update Posts/Pages', 'wp-content-studio-ai' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Generate and insert long descriptions for multiple posts and pages. The tool will skip items already processed.', 'wp-content-studio-ai' ) . '</p>';
+		echo '<p><label>' . esc_html__( 'Batch size (per request):', 'wp-content-studio-ai' ) . ' <input id="wgc-batch-size" type="number" min="1" max="20" value="5" /></label></p>';
+
+		// Bulk post types selector (multi-select)
+		$available_post_types = get_post_types( [ 'public' => true ], 'objects' );
+		echo '<p><label for="wgc-bulk-post-types"><strong>' . esc_html__( 'Select post types to process:', 'wp-content-studio-ai' ) . '</strong></label></p>';
+		echo '<select id="wgc-bulk-post-types" multiple size="6" style="min-width: 280px; max-width: 100%;">';
+		foreach ( $available_post_types as $post_type ) {
+			echo '<option value="' . esc_attr( $post_type->name ) . '">' . esc_html( $post_type->label ) . ' (' . esc_html( $post_type->name ) . ')</option>';
+		}
+		echo '</select>';
+		echo '<p class="description">' . esc_html__( 'Hold Cmd/Ctrl to select multiple types. If none selected, the saved setting under "Enable on Post Types" will be used.', 'wp-content-studio-ai' ) . '</p>';
+		
+		echo '<p><label><input type="checkbox" id="wgc-force-regenerate" /> ' . esc_html__( 'Force regenerate (include already processed posts)', 'wp-content-studio-ai' ) . '</label></p>';
+		echo '<p><button class="button button-primary" id="wgc-bulk-generate" data-nonce="' . esc_attr( $nonce ) . '">' . esc_html__( 'Run Bulk Generation', 'wp-content-studio-ai' ) . '</button> <span id="wgc-bulk-status"></span></p>';
 		echo '</div>';
 	}
 
@@ -276,7 +296,7 @@ class WPGeminiContentGenerator {
 		foreach ( $post_types as $post_type ) {
 			add_meta_box(
 				'wgc_meta_box',
-				__( 'Gemini Content Generator', 'wp-gemini-content-generator' ),
+				__( 'Content Studio AI', 'wp-content-studio-ai' ),
 				[ $this, 'render_meta_box' ],
 				$post_type,
 				'side',
@@ -291,34 +311,34 @@ class WPGeminiContentGenerator {
 		
 		// Different message for products vs other post types
 		if ( $post->post_type === 'product' ) {
-			echo '<p>' . esc_html__( 'Generate a 2000+ character product description based on the title and insert it into the content.', 'wp-gemini-content-generator' ) . '</p>';
+			echo '<p>' . esc_html__( 'Generate a 2000+ character product description based on the title and insert it into the content.', 'wp-content-studio-ai' ) . '</p>';
 		} else {
-			echo '<p>' . esc_html__( 'Generate a 2000+ character description based on the title and insert it into the content.', 'wp-gemini-content-generator' ) . '</p>';
+			echo '<p>' . esc_html__( 'Generate a 2000+ character description based on the title and insert it into the content.', 'wp-content-studio-ai' ) . '</p>';
 		}
 		// Different button text for products vs other post types
 		if ( $post->post_type === 'product' ) {
-			$button_text = __( 'Generate Product Description', 'wp-gemini-content-generator' );
+			$button_text = __( 'Generate Product Description', 'wp-content-studio-ai' );
 		} else {
-			$button_text = __( 'Generate Long Description', 'wp-gemini-content-generator' );
+			$button_text = __( 'Generate Long Description', 'wp-content-studio-ai' );
 		}
 		echo '<p><button type="button" class="button button-primary wgc-generate" data-post-id="' . esc_attr( (string) $post->ID ) . '" data-nonce="' . esc_attr( $nonce ) . '">' . esc_html( $button_text ) . '</button></p>';
 		
 		if ( $generated_time ) {
 			echo '<div class="wgc-generated-info" style="background: #f0f8ff; border: 1px solid #0073aa; padding: 10px; margin: 10px 0; border-radius: 3px;">';
-			echo '<p><strong>' . esc_html__( 'Last generated:', 'wp-gemini-content-generator' ) . '</strong> ' . esc_html( $generated_time ) . '</p>';
+			echo '<p><strong>' . esc_html__( 'Last generated:', 'wp-content-studio-ai' ) . '</strong> ' . esc_html( $generated_time ) . '</p>';
 			echo '</div>';
 		}
 		
 		echo '<div id="wgc-preview" style="display: none; background: #f9f9f9; border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 3px; max-height: 300px; overflow-y: auto;">';
-		echo '<h4>' . esc_html__( 'Generated Description Preview:', 'wp-gemini-content-generator' ) . '</h4>';
+		echo '<h4>' . esc_html__( 'Generated Description Preview:', 'wp-content-studio-ai' ) . '</h4>';
 		echo '<div id="wgc-preview-content" style="font-size: 13px; line-height: 1.4;"></div>';
 		echo '</div>';
 		
 		$append_mode = get_option( WGC_OPTION_APPEND_MODE, 'replace' );
 		if ( $append_mode === 'replace' ) {
-			echo '<p class="description">' . esc_html__( 'Content will replace the existing content.', 'wp-gemini-content-generator' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'Content will replace the existing content.', 'wp-content-studio-ai' ) . '</p>';
 		} else {
-			echo '<p class="description">' . esc_html__( 'Content will be appended to the end of the editor content.', 'wp-gemini-content-generator' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'Content will be appended to the end of the editor content.', 'wp-content-studio-ai' ) . '</p>';
 		}
 	}
 
@@ -339,17 +359,20 @@ class WPGeminiContentGenerator {
 			wp_localize_script( 'wgc-admin', 'WGC', [
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'i18n'    => [
-					'generating' => __( 'Generating...', 'wp-gemini-content-generator' ),
-					'done'       => __( 'Done', 'wp-gemini-content-generator' ),
-					'error'      => __( 'Error', 'wp-gemini-content-generator' ),
+					'generating' => __( 'Generating...', 'wp-content-studio-ai' ),
+					'done'       => __( 'Done', 'wp-content-studio-ai' ),
+					'error'      => __( 'Error', 'wp-content-studio-ai' ),
 				],
 			] );
 		}
 	}
 
 	private function get_api_key() {
-		$api_key = (string) get_option( WGC_OPTION_API_KEY, '' );
-		return $api_key;
+		$new = (string) get_option( 'wgc_ai_studio_api_key', '' );
+		if ( ! empty( $new ) ) {
+			return $new;
+		}
+		return (string) get_option( WGC_OPTION_API_KEY, '' );
 	}
 
 	private function build_prompt_for_title( string $title, int $post_id = 0 ): string {
@@ -440,7 +463,7 @@ Topic: ';
 	private function call_gemini_generate( string $prompt ) {
 		$api_key = $this->get_api_key();
 		if ( empty( $api_key ) ) {
-			return new WP_Error( 'wgc_missing_key', __( 'Missing Gemini API key. Please set it in settings.', 'wp-gemini-content-generator' ) );
+			return new WP_Error( 'wgc_missing_key', __( 'Missing API key. Please set it in settings.', 'wp-content-studio-ai' ) );
 		}
 
 		// Use the basic stable model
@@ -490,7 +513,7 @@ Topic: ';
 		}
 
 		// If all models failed, return the last error
-		$message = isset( $json['error']['message'] ) ? (string) $json['error']['message'] : __( 'No available Gemini models found.', 'wp-gemini-content-generator' );
+		$message = isset( $json['error']['message'] ) ? (string) $json['error']['message'] : __( 'No available AI models found.', 'wp-content-studio-ai' );
 		return new WP_Error( 'wgc_http_error', $message, [ 'status' => $code ] );
 	}
 
@@ -559,7 +582,7 @@ Topic: ';
 	private function append_content_to_post( int $post_id, string $new_content ) {
 		$post = get_post( $post_id );
 		if ( ! $post ) {
-			return new WP_Error( 'wgc_missing_post', __( 'Post not found.', 'wp-gemini-content-generator' ) );
+			return new WP_Error( 'wgc_missing_post', __( 'Post not found.', 'wp-content-studio-ai' ) );
 		}
 
 		$append_mode = get_option( WGC_OPTION_APPEND_MODE, 'replace' );
@@ -569,7 +592,7 @@ Topic: ';
 			$updated_content = $new_content;
 		} else {
 			// Append to existing content
-			$separator = apply_filters( 'wgc_content_separator', "\n\n<!-- Gemini Generated Description -->\n\n" );
+			$separator = apply_filters( 'wgc_content_separator', "\n\n<!-- AI Generated Description -->\n\n" );
 			$updated_content = (string) $post->post_content . $separator . $new_content;
 		}
 
@@ -588,14 +611,14 @@ Topic: ';
 
 	public function ajax_generate_for_post() {
 		if ( ! current_user_can( 'edit_posts' ) ) {
-			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'wp-gemini-content-generator' ) ], 403 );
+			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'wp-content-studio-ai' ) ], 403 );
 		}
 		check_ajax_referer( 'wgc_single_nonce', 'nonce' );
 
 		$post_id = isset( $_POST['postId'] ) ? (int) $_POST['postId'] : 0;
 		$title   = get_the_title( $post_id );
 		if ( empty( $post_id ) || empty( $title ) ) {
-			wp_send_json_error( [ 'message' => __( 'Invalid post.', 'wp-gemini-content-generator' ) ], 400 );
+			wp_send_json_error( [ 'message' => __( 'Invalid post.', 'wp-content-studio-ai' ) ], 400 );
 		}
 
 		$prompt = $this->build_prompt_for_title( $title, $post_id );
@@ -606,7 +629,7 @@ Topic: ';
 
 		$text = $this->extract_text_from_gemini_response( $json );
 		if ( strlen( $text ) < 2000 ) {
-			wp_send_json_error( [ 'message' => __( 'Generated text is shorter than 2000 characters. Try again.', 'wp-gemini-content-generator' ) ], 422 );
+			wp_send_json_error( [ 'message' => __( 'Generated text is shorter than 2000 characters. Try again.', 'wp-content-studio-ai' ) ], 422 );
 		}
 
 		$update = $this->append_content_to_post( $post_id, $text );
@@ -615,7 +638,7 @@ Topic: ';
 		}
 
 		wp_send_json_success( [ 
-			'message' => __( 'Content generated and inserted.', 'wp-gemini-content-generator' ),
+			'message' => __( 'Content generated and inserted.', 'wp-content-studio-ai' ),
 			'generated_content' => $text,
 			'character_count' => strlen( $text )
 		] );
@@ -623,29 +646,160 @@ Topic: ';
 
 	public function ajax_bulk_generate() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'wp-gemini-content-generator' ) ], 403 );
+			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'wp-content-studio-ai' ) ], 403 );
 		}
 		check_ajax_referer( 'wgc_bulk_nonce', 'nonce' );
 
 		$batch_size = isset( $_POST['batchSize'] ) ? max( 1, min( 20, (int) $_POST['batchSize'] ) ) : 5;
+		$force_regenerate = isset( $_POST['forceRegenerate'] ) && $_POST['forceRegenerate'] === 'true';
 
-		$post_types = get_option( WGC_OPTION_POST_TYPES, [ 'post', 'page' ] );
+		// Use selected post types from request, falling back to plugin option
+		$requested_types = isset( $_POST['postTypes'] ) ? (array) $_POST['postTypes'] : [];
+		$requested_types = array_map( 'sanitize_text_field', $requested_types );
+		$public_types = get_post_types( [ 'public' => true ], 'names' );
+		$post_types = array_values( array_intersect( $requested_types, $public_types ) );
+		if ( empty( $post_types ) ) {
+			$post_types = get_option( WGC_OPTION_POST_TYPES, [ 'post', 'page' ] );
+			$post_types = array_values( array_intersect( (array) $post_types, $public_types ) );
+		}
+
+		// Get total posts to process - first try without meta query to see all posts
+		$args_all = [
+			'post_type'      => $post_types,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+		];
+		$all_query = new WP_Query( $args_all );
+		$all_posts = $all_query->found_posts;
+		
+		// Now get posts without generated content (or all if force regenerate)
+		$args = [
+			'post_type'      => $post_types,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+		];
+		
+		if ( ! $force_regenerate ) {
+			$args['meta_query'] = [
+				'relation' => 'OR',
+				[ 'key' => '_wgc_generated', 'compare' => 'NOT EXISTS' ],
+				[ 'key' => '_wgc_generated', 'value' => '', 'compare' => '=' ],
+			];
+		}
+		
+		$total_query = new WP_Query( $args );
+		$total_posts = $total_query->found_posts;
+
+		if ( $total_posts === 0 ) {
+			$debug_message = sprintf( 
+				__( 'No posts found to process. Debug: Total posts in selected types: %d, Post types: %s', 'wp-content-studio-ai' ),
+				$all_posts,
+				implode( ', ', $post_types )
+			);
+			
+			wp_send_json_success( [
+				'job_started' => false,
+				'message' => $debug_message,
+				'total' => 0,
+				'processed' => 0,
+				'debug' => [
+					'all_posts' => $all_posts,
+					'post_types' => $post_types,
+					'selected_types' => $requested_types,
+				],
+			] );
+		}
+
+		// Store job parameters
+		$job_id = 'wgc_bulk_' . time();
+		update_option( 'wgc_bulk_job_' . $job_id, [
+			'post_types' => $post_types,
+			'batch_size' => $batch_size,
+			'total_posts' => $total_posts,
+			'processed' => 0,
+			'errors' => [],
+			'status' => 'running',
+			'started_at' => current_time( 'mysql' ),
+			'force_regenerate' => $force_regenerate,
+		] );
+
+		// Schedule the job
+		wp_schedule_single_event( time(), 'wgc_bulk_process_job', [ $job_id ] );
+
+		wp_send_json_success( [
+			'job_started' => true,
+			'job_id' => $job_id,
+			'message' => __( 'Bulk generation job started. Processing in background...', 'wp-content-studio-ai' ),
+			'total' => $total_posts,
+			'processed' => 0,
+		] );
+	}
+
+	public function ajax_bulk_status() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'wp-content-studio-ai' ) ], 403 );
+		}
+		check_ajax_referer( 'wgc_bulk_nonce', 'nonce' );
+
+		$job_id = isset( $_POST['jobId'] ) ? sanitize_text_field( $_POST['jobId'] ) : '';
+		if ( empty( $job_id ) ) {
+			wp_send_json_error( [ 'message' => __( 'Job ID required.', 'wp-content-studio-ai' ) ], 400 );
+		}
+
+		$job_data = get_option( 'wgc_bulk_job_' . $job_id, null );
+		if ( ! $job_data ) {
+			wp_send_json_error( [ 'message' => __( 'Job not found.', 'wp-content-studio-ai' ) ], 404 );
+		}
+
+		wp_send_json_success( $job_data );
+	}
+
+	public function schedule_bulk_job() {
+		// Check if there are any pending jobs and schedule them
+		global $wpdb;
+		$jobs = $wpdb->get_results( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE 'wgc_bulk_job_%' AND option_value LIKE '%\"status\":\"running\"%'" );
+		
+		foreach ( $jobs as $job ) {
+			$job_id = str_replace( 'wgc_bulk_job_', '', $job->option_name );
+			if ( ! wp_next_scheduled( 'wgc_bulk_process_job', [ $job_id ] ) ) {
+				wp_schedule_single_event( time(), 'wgc_bulk_process_job', [ $job_id ] );
+			}
+		}
+	}
+
+	public function process_bulk_job( $job_id ) {
+		$job_data = get_option( 'wgc_bulk_job_' . $job_id, null );
+		if ( ! $job_data || $job_data['status'] !== 'running' ) {
+			return;
+		}
+
+		$post_types = $job_data['post_types'];
+		$batch_size = $job_data['batch_size'];
+		$processed = $job_data['processed'];
+		$errors = $job_data['errors'];
+
+		// Get next batch of posts
 		$args = [
 			'post_type'      => $post_types,
 			'post_status'    => 'publish',
 			'posts_per_page' => $batch_size,
+			'offset'         => $processed,
 			'orderby'        => 'date',
 			'order'          => 'DESC',
-			'meta_query'     => [
+		];
+		
+		// Only add meta query if not force regenerating
+		if ( ! isset( $job_data['force_regenerate'] ) || ! $job_data['force_regenerate'] ) {
+			$args['meta_query'] = [
 				'relation' => 'OR',
 				[ 'key' => '_wgc_generated', 'compare' => 'NOT EXISTS' ],
 				[ 'key' => '_wgc_generated', 'value' => '', 'compare' => '=' ],
-			],
-		];
+			];
+		}
 
 		$q = new WP_Query( $args );
-		$count_processed = 0;
-		$errors = [];
+		$batch_processed = 0;
+
 		if ( $q->have_posts() ) {
 			foreach ( $q->posts as $post ) {
 				$title = get_the_title( $post );
@@ -660,7 +814,7 @@ Topic: ';
 				}
 				$text = $this->extract_text_from_gemini_response( $json );
 				if ( strlen( $text ) < 2000 ) {
-					$errors[] = sprintf( /* translators: %d: Post ID */ __( 'Post %d generated text too short.', 'wp-gemini-content-generator' ), (int) $post->ID );
+					$errors[] = sprintf( /* translators: %d: Post ID */ __( 'Post %d generated text too short.', 'wp-content-studio-ai' ), (int) $post->ID );
 					continue;
 				}
 				$update = $this->append_content_to_post( (int) $post->ID, $text );
@@ -668,17 +822,48 @@ Topic: ';
 					$errors[] = $update->get_error_message();
 					continue;
 				}
-				$count_processed++;
+				$batch_processed++;
 			}
 		}
-		wp_send_json_success( [
-			'processed' => $count_processed,
-			'errors'    => $errors,
-		] );
+
+		// Update job data
+		$new_processed = $processed + $batch_processed;
+		$is_complete = $new_processed >= $job_data['total_posts'] || $batch_processed === 0;
+
+		$job_data['processed'] = $new_processed;
+		$job_data['errors'] = $errors;
+		$job_data['status'] = $is_complete ? 'completed' : 'running';
+		$job_data['completed_at'] = $is_complete ? current_time( 'mysql' ) : null;
+
+		update_option( 'wgc_bulk_job_' . $job_id, $job_data );
+
+		// Schedule next batch if not complete
+		if ( ! $is_complete ) {
+			wp_schedule_single_event( time() + 30, 'wgc_bulk_process_job', [ $job_id ] );
+		}
 	}
 }
 
+if ( ! class_exists( 'WPCSAI_ContentGenerator' ) && class_exists( 'WPGeminiContentGenerator' ) ) { class_alias( 'WPGeminiContentGenerator', 'WPCSAI_ContentGenerator' ); }
+
 new WPGeminiContentGenerator();
+
+
+
+
+register_deactivation_hook( __FILE__, 'wgc_on_deactivate' );
+function wgc_on_deactivate() {
+	// Clear potential scheduled hooks if used
+	if ( function_exists( 'wp_clear_scheduled_hook' ) ) {
+		wp_clear_scheduled_hook( 'wgc_bulk_process_job' );
+	}
+	// Cleanup any stored bulk job markers
+	global $wpdb;
+	if ( isset( $wpdb ) && property_exists( $wpdb, 'options' ) ) {
+		$table = $wpdb->options;
+		$wpdb->query( "DELETE FROM {$table} WHERE option_name LIKE 'wgc_bulk_job_%'" );
+	}
+}
 
 
 
