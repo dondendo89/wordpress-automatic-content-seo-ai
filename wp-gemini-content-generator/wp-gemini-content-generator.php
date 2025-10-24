@@ -44,6 +44,8 @@ class WPGeminiContentGenerator {
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 		add_action( 'add_meta_boxes', [ $this, 'register_meta_box' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
+		add_action( 'enqueue_block_editor_assets', [ $this, 'enqueue_gutenberg_assets' ] );
+		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
 
 		// AJAX actions
 		add_action( 'wp_ajax_wgc_generate_for_post', [ $this, 'ajax_generate_for_post' ] );
@@ -668,21 +670,17 @@ class WPGeminiContentGenerator {
 						</button>
 					<?php endif; ?>
 
-					<?php if ( get_option( WGC_OPTION_GENERATE_TAGS, true ) ) : ?>
-						<button type="button" id="wgc-generate-tags" class="button button-secondary" 
-								data-post-id="<?php echo esc_attr( $post->ID ); ?>" 
-								data-nonce="<?php echo esc_attr( $nonce ); ?>">
-							<?php _e( 'Generate Tags', 'wp-gemini-content-generator' ); ?>
-						</button>
-					<?php endif; ?>
+					<button type="button" id="wgc-generate-tags" class="button button-secondary" 
+							data-post-id="<?php echo esc_attr( $post->ID ); ?>" 
+							data-nonce="<?php echo esc_attr( $nonce ); ?>">
+						<?php _e( 'Generate Tags', 'wp-gemini-content-generator' ); ?>
+					</button>
 
-					<?php if ( get_option( WGC_OPTION_GENERATE_EXCERPT, true ) ) : ?>
-						<button type="button" id="wgc-generate-excerpt" class="button button-secondary" 
-								data-post-id="<?php echo esc_attr( $post->ID ); ?>" 
-								data-nonce="<?php echo esc_attr( $nonce ); ?>">
-							<?php _e( 'Generate Excerpt', 'wp-gemini-content-generator' ); ?>
-						</button>
-					<?php endif; ?>
+					<button type="button" id="wgc-generate-excerpt" class="button button-secondary" 
+							data-post-id="<?php echo esc_attr( $post->ID ); ?>" 
+							data-nonce="<?php echo esc_attr( $nonce ); ?>">
+						<?php _e( 'Generate Excerpt', 'wp-gemini-content-generator' ); ?>
+					</button>
 				</div>
 			</div>
 
@@ -725,6 +723,240 @@ class WPGeminiContentGenerator {
 					],
 				] );
 			}
+		}
+	}
+
+	/**
+	 * Enqueue Gutenberg scripts and styles
+	 */
+	public function enqueue_gutenberg_assets() {
+		// Check if we're in the block editor
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( ! $screen || ! $screen->is_block_editor() ) {
+			return;
+		}
+
+		$post_types = get_option( WGC_OPTION_POST_TYPES, [ 'post', 'page' ] );
+		$current_post_type = $screen->post_type ?? '';
+		
+		// Only load on selected post types
+		if ( ! in_array( $current_post_type, $post_types ) ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'wgc-gutenberg',
+			WGC_PLUGIN_URL . 'assets/js/gutenberg.js',
+			[ 'wp-plugins', 'wp-edit-post', 'wp-element', 'wp-components', 'wp-data', 'wp-i18n', 'wp-api-fetch' ],
+			WGC_VERSION,
+			true
+		);
+
+		wp_enqueue_style(
+			'wgc-gutenberg',
+			WGC_PLUGIN_URL . 'assets/css/gutenberg.css',
+			[ 'wp-components' ],
+			WGC_VERSION
+		);
+
+		// Localize script for Gutenberg
+		wp_localize_script( 'wgc-gutenberg', 'WGCGutenberg', [
+			'ajax_url' => admin_url( 'admin-ajax.php' ),
+			'rest_url' => rest_url( 'wp-gemini-content-generator/v1/' ),
+			'nonce' => wp_create_nonce( 'wp_rest' ),
+			'strings' => [
+				'generating' => __( 'Generating...', 'wp-gemini-content-generator' ),
+				'success' => __( 'Content generated successfully!', 'wp-gemini-content-generator' ),
+				'error' => __( 'Error generating content.', 'wp-gemini-content-generator' ),
+				'no_title' => __( 'Please add a title to your post first.', 'wp-gemini-content-generator' ),
+				'network_error' => __( 'Network error. Please try again.', 'wp-gemini-content-generator' )
+			]
+		] );
+	}
+
+	/**
+	 * Register REST API routes for Gutenberg integration
+	 */
+	public function register_rest_routes() {
+		register_rest_route( 'wp-gemini-content-generator/v1', '/generate', [
+			'methods' => 'POST',
+			'callback' => [ $this, 'rest_generate_content' ],
+			'permission_callback' => [ $this, 'rest_permission_check' ],
+			'args' => [
+				'post_id' => [
+					'required' => true,
+					'type' => 'integer',
+					'sanitize_callback' => 'absint',
+				],
+				'type' => [
+					'required' => true,
+					'type' => 'string',
+					'enum' => [ 'content', 'meta_description', 'tags', 'excerpt', 'all' ],
+				],
+				'title' => [
+					'required' => false,
+					'type' => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'content' => [
+					'required' => false,
+					'type' => 'string',
+					'sanitize_callback' => 'wp_kses_post',
+				],
+				'language' => [
+					'required' => false,
+					'type' => 'string',
+					'default' => 'en',
+				],
+				'content_length' => [
+					'required' => false,
+					'type' => 'string',
+					'default' => 'long',
+				],
+				'emoji_icons' => [
+					'required' => false,
+					'type' => 'boolean',
+					'default' => true,
+				],
+				'seo_focus' => [
+					'required' => false,
+					'type' => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'generate_meta' => [
+					'required' => false,
+					'type' => 'boolean',
+					'default' => true,
+				],
+				'generate_tags' => [
+					'required' => false,
+					'type' => 'boolean',
+					'default' => true,
+				],
+				'generate_excerpt' => [
+					'required' => false,
+					'type' => 'boolean',
+					'default' => true,
+				],
+			],
+		] );
+	}
+
+	/**
+	 * REST API permission check
+	 */
+	public function rest_permission_check( $request ) {
+		return current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * REST API endpoint for content generation
+	 */
+	public function rest_generate_content( $request ) {
+		$post_id = $request->get_param( 'post_id' );
+		$type = $request->get_param( 'type' );
+		$title = $request->get_param( 'title' );
+		$content = $request->get_param( 'content' );
+		$language = $request->get_param( 'language' );
+		$content_length = $request->get_param( 'content_length' );
+		$emoji_icons = $request->get_param( 'emoji_icons' );
+		$seo_focus = $request->get_param( 'seo_focus' );
+		$generate_meta = $request->get_param( 'generate_meta' );
+		$generate_tags = $request->get_param( 'generate_tags' );
+		$generate_excerpt = $request->get_param( 'generate_excerpt' );
+
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return new WP_Error( 'post_not_found', __( 'Post not found', 'wp-gemini-content-generator' ), [ 'status' => 404 ] );
+		}
+
+		$result = [];
+
+		try {
+			switch ( $type ) {
+				case 'content':
+					$prompt = $this->build_prompt_for_title( $title ?: $post->post_title, $post_id );
+					$response = $this->call_gemini_generate( $prompt );
+					if ( is_wp_error( $response ) ) {
+						return $response;
+					}
+					$generated_content = $this->extract_text_from_gemini_response( $response );
+					$result['content'] = $generated_content;
+					break;
+
+				case 'meta_description':
+					$prompt = $this->build_meta_description_prompt( $title ?: $post->post_title, $content ?: $post->post_content );
+					$response = $this->call_gemini_generate( $prompt );
+					if ( is_wp_error( $response ) ) {
+						return $response;
+					}
+					$meta_description = $this->extract_text_from_gemini_response( $response );
+					$result['meta_description'] = $meta_description;
+					break;
+
+				case 'tags':
+					$prompt = $this->build_tags_prompt( $title ?: $post->post_title, $content ?: $post->post_content );
+					$response = $this->call_gemini_generate( $prompt );
+					if ( is_wp_error( $response ) ) {
+						return $response;
+					}
+					$tags = $this->extract_text_from_gemini_response( $response );
+					$result['tags'] = array_map( 'trim', explode( ',', $tags ) );
+					break;
+
+				case 'excerpt':
+					$prompt = $this->build_excerpt_prompt( $title ?: $post->post_title, $content ?: $post->post_content );
+					$response = $this->call_gemini_generate( $prompt );
+					if ( is_wp_error( $response ) ) {
+						return $response;
+					}
+					$excerpt_text = $this->extract_text_from_gemini_response( $response );
+					$excerpt_length = get_option( WGC_OPTION_EXCERPT_LENGTH, 55 );
+					$result['excerpt'] = wp_trim_words( $excerpt_text, $excerpt_length, '...' );
+					break;
+
+				case 'all':
+					// Generate all content types
+					$content_prompt = $this->build_prompt_for_title( $title ?: $post->post_title, $post_id );
+					$meta_prompt = $this->build_meta_description_prompt( $title ?: $post->post_title, $content ?: $post->post_content );
+					$tags_prompt = $this->build_tags_prompt( $title ?: $post->post_title, $content ?: $post->post_content );
+					$excerpt_prompt = $this->build_excerpt_prompt( $title ?: $post->post_title, $content ?: $post->post_content );
+
+					$content_response = $this->call_gemini_generate( $content_prompt );
+					$meta_response = $this->call_gemini_generate( $meta_prompt );
+					$tags_response = $this->call_gemini_generate( $tags_prompt );
+					$excerpt_response = $this->call_gemini_generate( $excerpt_prompt );
+
+					if ( ! is_wp_error( $content_response ) ) {
+						$result['content'] = $this->extract_text_from_gemini_response( $content_response );
+					}
+					if ( ! is_wp_error( $meta_response ) ) {
+						$result['meta_description'] = $this->extract_text_from_gemini_response( $meta_response );
+					}
+					if ( ! is_wp_error( $tags_response ) ) {
+						$tags_text = $this->extract_text_from_gemini_response( $tags_response );
+						$result['tags'] = array_map( 'trim', explode( ',', $tags_text ) );
+					}
+					if ( ! is_wp_error( $excerpt_response ) ) {
+						$excerpt_text = $this->extract_text_from_gemini_response( $excerpt_response );
+						$excerpt_length = get_option( WGC_OPTION_EXCERPT_LENGTH, 55 );
+						$result['excerpt'] = wp_trim_words( $excerpt_text, $excerpt_length, '...' );
+					}
+					break;
+			}
+
+			return [
+				'success' => true,
+				'data' => $result,
+				'message' => __( 'Content generated successfully!', 'wp-gemini-content-generator' )
+			];
+
+		} catch ( Exception $e ) {
+			return new WP_Error( 'generation_failed', $e->getMessage(), [ 'status' => 500 ] );
 		}
 	}
 
@@ -835,8 +1067,15 @@ class WPGeminiContentGenerator {
 		$tags = array_map( 'trim', explode( ',', $tags_text ) );
 		$tags = array_slice( $tags, 0, 10 ); // Limit to 10 tags
 
-		// Set tags for the post
-		wp_set_post_tags( $post_id, $tags );
+		// Set tags for the post/product
+		$post_type = get_post_type( $post_id );
+		if ( $post_type === 'product' ) {
+			// For WooCommerce products, use product_tag taxonomy
+			wp_set_object_terms( $post_id, $tags, 'product_tag' );
+		} else {
+			// For regular posts, use post_tag taxonomy
+			wp_set_post_tags( $post_id, $tags );
+		}
 
 		wp_send_json_success( [
 			'tags' => $tags,
@@ -905,11 +1144,19 @@ class WPGeminiContentGenerator {
 			
 			if ( ! is_wp_error( $result ) ) {
 				$generated_text = $this->extract_text_from_gemini_response( $result );
+				
 				if ( ! empty( $generated_text ) ) {
 					$append_mode = get_option( WGC_OPTION_APPEND_MODE, 'append' );
-					$this->append_content_to_post( $post_id, $generated_text, $append_mode );
-					update_post_meta( $post_id, '_wgc_generated', current_time( 'mysql' ) );
-					$results['content'] = __( 'Content generated successfully!', 'wp-gemini-content-generator' );
+					$success = $this->append_content_to_post( $post_id, $generated_text, $append_mode );
+					
+					if ( $success ) {
+						update_post_meta( $post_id, '_wgc_generated', current_time( 'mysql' ) );
+						$results['content'] = __( 'Content generated successfully!', 'wp-gemini-content-generator' );
+					} else {
+						$errors['content'] = __( 'Failed to save content to post', 'wp-gemini-content-generator' );
+					}
+				} else {
+					$errors['content'] = __( 'No content generated from AI response', 'wp-gemini-content-generator' );
 				}
 			} else {
 				$errors['content'] = $result->get_error_message();
@@ -919,79 +1166,119 @@ class WPGeminiContentGenerator {
 		}
 
 		// Generate meta description
-		if ( get_option( WGC_OPTION_META_DESCRIPTION, true ) ) {
-			try {
-				$meta_prompt = $this->build_meta_description_prompt( $post->post_title, $post->post_content );
-				$meta_result = $this->call_gemini_generate( $meta_prompt );
+		try {
+			$meta_prompt = $this->build_meta_description_prompt( $post->post_title, $post->post_content );
+			$meta_result = $this->call_gemini_generate( $meta_prompt );
+			
+			if ( ! is_wp_error( $meta_result ) ) {
+				$meta_description = $this->extract_text_from_gemini_response( $meta_result );
+				$meta_description = wp_trim_words( $meta_description, 25, '...' );
 				
-				if ( ! is_wp_error( $meta_result ) ) {
-					$meta_description = $this->extract_text_from_gemini_response( $meta_result );
-					$meta_description = wp_trim_words( $meta_description, 25, '...' );
-					
-					update_post_meta( $post_id, '_yoast_wpseo_metadesc', $meta_description );
-					update_post_meta( $post_id, '_rank_math_description', $meta_description );
-					update_post_meta( $post_id, '_wgc_meta_description', $meta_description );
-					$results['meta'] = __( 'Meta description generated successfully!', 'wp-gemini-content-generator' );
-				} else {
-					$errors['meta'] = $meta_result->get_error_message();
-				}
-			} catch ( Exception $e ) {
-				$errors['meta'] = $e->getMessage();
+				update_post_meta( $post_id, '_yoast_wpseo_metadesc', $meta_description );
+				update_post_meta( $post_id, '_rank_math_description', $meta_description );
+				update_post_meta( $post_id, '_wgc_meta_description', $meta_description );
+				$results['meta'] = __( 'Meta description generated successfully!', 'wp-gemini-content-generator' );
+			} else {
+				$errors['meta'] = $meta_result->get_error_message();
 			}
+		} catch ( Exception $e ) {
+			$errors['meta'] = $e->getMessage();
 		}
 
 		// Generate tags
-		if ( get_option( WGC_OPTION_GENERATE_TAGS, true ) ) {
-			try {
-				$tags_prompt = $this->build_tags_prompt( $post->post_title, $post->post_content );
-				$tags_result = $this->call_gemini_generate( $tags_prompt );
+		try {
+			$tags_prompt = $this->build_tags_prompt( $post->post_title, $post->post_content );
+			$tags_result = $this->call_gemini_generate( $tags_prompt );
+			
+			if ( ! is_wp_error( $tags_result ) ) {
+				$tags_text = $this->extract_text_from_gemini_response( $tags_result );
+				$tags = array_map( 'trim', explode( ',', $tags_text ) );
+				$tags = array_slice( $tags, 0, 10 );
 				
-				if ( ! is_wp_error( $tags_result ) ) {
-					$tags_text = $this->extract_text_from_gemini_response( $tags_result );
-					$tags = array_map( 'trim', explode( ',', $tags_text ) );
-					$tags = array_slice( $tags, 0, 10 );
-					
-					wp_set_post_tags( $post_id, $tags );
-					$results['tags'] = __( 'Tags generated successfully!', 'wp-gemini-content-generator' );
+				// Set tags for the post/product
+				$post_type = get_post_type( $post_id );
+				if ( $post_type === 'product' ) {
+					// For WooCommerce products, use product_tag taxonomy
+					wp_set_object_terms( $post_id, $tags, 'product_tag' );
 				} else {
-					$errors['tags'] = $tags_result->get_error_message();
+					// For regular posts, use post_tag taxonomy
+					wp_set_post_tags( $post_id, $tags );
 				}
-			} catch ( Exception $e ) {
-				$errors['tags'] = $e->getMessage();
+				$results['tags'] = __( 'Tags generated successfully!', 'wp-gemini-content-generator' );
+			} else {
+				$errors['tags'] = $tags_result->get_error_message();
 			}
+		} catch ( Exception $e ) {
+			$errors['tags'] = $e->getMessage();
 		}
 
 		// Generate excerpt
-		if ( get_option( WGC_OPTION_GENERATE_EXCERPT, true ) ) {
-			try {
-				$excerpt_prompt = $this->build_excerpt_prompt( $post->post_title, $post->post_content );
-				$excerpt_result = $this->call_gemini_generate( $excerpt_prompt );
+		try {
+			$excerpt_prompt = $this->build_excerpt_prompt( $post->post_title, $post->post_content );
+			$excerpt_result = $this->call_gemini_generate( $excerpt_prompt );
+			
+			if ( ! is_wp_error( $excerpt_result ) ) {
+				$excerpt_text = $this->extract_text_from_gemini_response( $excerpt_result );
+				$excerpt_length = get_option( WGC_OPTION_EXCERPT_LENGTH, 55 );
+				$excerpt = wp_trim_words( $excerpt_text, $excerpt_length, '...' );
 				
-				if ( ! is_wp_error( $excerpt_result ) ) {
-					$excerpt_text = $this->extract_text_from_gemini_response( $excerpt_result );
-					$excerpt_length = get_option( WGC_OPTION_EXCERPT_LENGTH, 55 );
-					$excerpt = wp_trim_words( $excerpt_text, $excerpt_length, '...' );
-					
-					wp_update_post( [
-						'ID' => $post_id,
-						'post_excerpt' => $excerpt
-					] );
-					$results['excerpt'] = __( 'Excerpt generated successfully!', 'wp-gemini-content-generator' );
-				} else {
-					$errors['excerpt'] = $excerpt_result->get_error_message();
-				}
-			} catch ( Exception $e ) {
-				$errors['excerpt'] = $e->getMessage();
+				wp_update_post( [
+					'ID' => $post_id,
+					'post_excerpt' => $excerpt
+				] );
+				$results['excerpt'] = __( 'Excerpt generated successfully!', 'wp-gemini-content-generator' );
+			} else {
+				$errors['excerpt'] = $excerpt_result->get_error_message();
 			}
+		} catch ( Exception $e ) {
+			$errors['excerpt'] = $e->getMessage();
 		}
 
 		// Prepare response
 		$message = '';
 		if ( ! empty( $results ) ) {
-			$message .= __( 'Successfully generated: ', 'wp-gemini-content-generator' ) . implode( ', ', array_keys( $results ) ) . '. ';
+			$generated_items = [];
+			foreach ( $results as $key => $value ) {
+				switch ( $key ) {
+					case 'content':
+						$generated_items[] = __( 'Content', 'wp-gemini-content-generator' );
+						break;
+					case 'meta':
+						$generated_items[] = __( 'Meta Description', 'wp-gemini-content-generator' );
+						break;
+					case 'tags':
+						$generated_items[] = __( 'Tags', 'wp-gemini-content-generator' );
+						break;
+					case 'excerpt':
+						$generated_items[] = __( 'Excerpt', 'wp-gemini-content-generator' );
+						break;
+					default:
+						$generated_items[] = ucfirst( $key );
+				}
+			}
+			$message .= __( 'Successfully generated: ', 'wp-gemini-content-generator' ) . implode( ', ', $generated_items ) . '. ';
 		}
 		if ( ! empty( $errors ) ) {
-			$message .= __( 'Errors: ', 'wp-gemini-content-generator' ) . implode( ', ', array_keys( $errors ) ) . '.';
+			$error_items = [];
+			foreach ( $errors as $key => $value ) {
+				switch ( $key ) {
+					case 'content':
+						$error_items[] = __( 'Content', 'wp-gemini-content-generator' );
+						break;
+					case 'meta':
+						$error_items[] = __( 'Meta Description', 'wp-gemini-content-generator' );
+						break;
+					case 'tags':
+						$error_items[] = __( 'Tags', 'wp-gemini-content-generator' );
+						break;
+					case 'excerpt':
+						$error_items[] = __( 'Excerpt', 'wp-gemini-content-generator' );
+						break;
+					default:
+						$error_items[] = ucfirst( $key );
+				}
+			}
+			$message .= __( 'Errors in: ', 'wp-gemini-content-generator' ) . implode( ', ', $error_items ) . '.';
 		}
 
 		wp_send_json_success( [
@@ -1166,7 +1453,15 @@ class WPGeminiContentGenerator {
 						$tags = array_map( 'trim', explode( ',', $tags_text ) );
 						$tags = array_slice( $tags, 0, 10 );
 						
-						wp_set_post_tags( $post_id, $tags );
+						// Set tags for the post/product
+						$post_type = get_post_type( $post_id );
+						if ( $post_type === 'product' ) {
+							// For WooCommerce products, use product_tag taxonomy
+							wp_set_object_terms( $post_id, $tags, 'product_tag' );
+						} else {
+							// For regular posts, use post_tag taxonomy
+							wp_set_post_tags( $post_id, $tags );
+						}
 					}
 				}
 
@@ -1356,6 +1651,7 @@ class WPGeminiContentGenerator {
 		$code = wp_remote_retrieve_response_code( $response );
 		$json = json_decode( (string) wp_remote_retrieve_body( $response ), true );
 		
+		
 		if ( $code >= 200 && $code < 300 ) {
 			return is_array( $json ) ? $json : [];
 		}
@@ -1365,10 +1661,6 @@ class WPGeminiContentGenerator {
 	}
 
 	private function extract_text_from_gemini_response( $response ) {
-		// Debug logging
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( 'WGC Debug - Response structure: ' . print_r( $response, true ) );
-		}
 		
 		// Check if response has the expected structure
 		if ( empty( $response ) || ! is_array( $response ) ) {

@@ -157,6 +157,11 @@
                     if ($('#rank_math_description').length) {
                         $('#rank_math_description').val(response.data.meta_description);
                     }
+                    
+                    // Refresh page after a short delay to show updated content
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 2000);
                 } else {
                     WGCAdmin.showNotice('error', response.data.message || 'Error generating meta description');
                 }
@@ -197,6 +202,11 @@
                         var tagsText = response.data.tags.join(', ');
                         $('#new-tag-post_tag').val(tagsText);
                     }
+                    
+                    // Refresh page after a short delay to show updated content
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 2000);
                 } else {
                     WGCAdmin.showNotice('error', response.data.message || 'Error generating tags');
                 }
@@ -236,6 +246,11 @@
                     if ($('#excerpt').length) {
                         $('#excerpt').val(response.data.excerpt);
                     }
+                    
+                    // Refresh page after a short delay to show updated content
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 2000);
                 } else {
                     WGCAdmin.showNotice('error', response.data.message || 'Error generating excerpt');
                 }
@@ -377,11 +392,29 @@
         },
 
         monitorBulkJob: function(jobId, $btn, $status) {
+            var startTime = Date.now();
+            var maxDuration = 30 * 60 * 1000; // 30 minutes max
+            
             WGCAdmin.bulkJobInterval = setInterval(function() {
+                // Check if job has been running too long
+                if (Date.now() - startTime > maxDuration) {
+                    clearInterval(WGCAdmin.bulkJobInterval);
+                    WGCAdmin.bulkJobInterval = null;
+                    $btn.removeClass('wgc-loading').prop('disabled', false);
+                    $btn.html('Start Bulk Generation');
+                    
+                    $status.html(
+                        '<div class="wgc-notice warning">' +
+                        '<strong>⏰ Job Timeout!</strong><br>' +
+                        'The job has been running for more than 30 minutes. Please check manually or restart the job.' +
+                        '</div>'
+                    );
+                    return;
+                }
                 $.post(WGC.ajax_url, {
                     action: 'wgc_bulk_status',
                     jobId: jobId,
-                    nonce: WGC.nonce
+                    nonce: $('#wgc-bulk-generate').data('nonce')
                 })
                 .done(function(response) {
                     if (response.success) {
@@ -415,15 +448,57 @@
                                 'Errors: ' + (data.errors ? data.errors.length : 0) +
                                 '</div>'
                             );
+                        } else if (data.status === 'failed') {
+                            clearInterval(WGCAdmin.bulkJobInterval);
+                            WGCAdmin.bulkJobInterval = null;
+                            $btn.removeClass('wgc-loading').prop('disabled', false);
+                            $btn.html('Start Bulk Generation');
+                            
+                            $status.html(
+                                '<div class="wgc-notice error">' +
+                                '<strong>❌ Job Failed!</strong><br>' +
+                                'Error: ' + (data.error_message || 'Unknown error') +
+                                '</div>'
+                            );
                         }
+                    } else {
+                        // Handle API errors
+                        clearInterval(WGCAdmin.bulkJobInterval);
+                        WGCAdmin.bulkJobInterval = null;
+                        $btn.removeClass('wgc-loading').prop('disabled', false);
+                        $btn.html('Start Bulk Generation');
+                        
+                        $status.html(
+                            '<div class="wgc-notice error">' +
+                            '<strong>❌ Monitoring Error!</strong><br>' +
+                            'Error: ' + (response.data.message || 'Unknown error') +
+                            '</div>'
+                        );
                     }
                 })
-                .fail(function() {
+                .fail(function(xhr, status, error) {
                     clearInterval(WGCAdmin.bulkJobInterval);
                     WGCAdmin.bulkJobInterval = null;
                     $btn.removeClass('wgc-loading').prop('disabled', false);
                     $btn.html('Start Bulk Generation');
-                    $status.html('<div class="wgc-notice error">Error monitoring job status</div>');
+                    
+                    var errorMessage = 'Error monitoring job status';
+                    if (xhr.status === 0) {
+                        errorMessage = 'Network error - please check your connection';
+                    } else if (xhr.status === 403) {
+                        errorMessage = 'Permission denied - please refresh the page';
+                    } else if (xhr.status === 404) {
+                        errorMessage = 'Job not found - it may have been completed or expired';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Server error - please try again later';
+                    }
+                    
+                    $status.html(
+                        '<div class="wgc-notice error">' +
+                        '<strong>❌ ' + errorMessage + '</strong><br>' +
+                        'Status: ' + xhr.status + ' | Error: ' + error +
+                        '</div>'
+                    );
                 });
             }, 3000); // Check every 3 seconds
         },

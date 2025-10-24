@@ -1,0 +1,431 @@
+/* WP Gemini Content Generator - Gutenberg Integration Styles */
+
+/* ===== GUTENBERG SIDEBAR PANEL ===== */
+.wgc-gutenberg-notice {
+    margin: 16px 0;
+    border-radius: 4px;
+    padding: 12px;
+    font-weight: 500;
+}
+
+.wgc-gutenberg-notice.is-success {
+    background: #f0f9ff;
+    border-left: 4px solid #00a32a;
+    color: #006600;
+}
+
+.wgc-gutenberg-notice.is-error {
+    background: #fef7f7;
+    border-left: 4px solid #d63638;
+    color: #cc0000;
+}
+
+.wgc-gutenberg-notice.is-warning {
+    background: #fffbf0;
+    border-left: 4px solid #dba617;
+    color: #996600;
+}
+
+.wgc-gutenberg-notice.is-info {
+    background: #f0f8ff;
+    border-left: 4px solid #72aee6;
+    color: #0066cc;
+}
+
+/* ===== AI CONTROLS ===== */
+.wgc-ai-controls {
+    width: 100%;
+}
+
+.wgc-generate-all-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 16px 24px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    margin-bottom: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+}
+
+.wgc-generate-all-btn:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190) !important;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+    transform: translateY(-2px) !important;
+}
+
+.wgc-generate-all-btn:disabled {
+    background: #c3c4c7 !important;
+    color: #646970 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ===== INDIVIDUAL CONTROLS GRID ===== */
+.wgc-individual-controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.wgc-individual-controls .components-button {
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+    text-align: center !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+    font-weight: 500 !important;
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+}
+
+.wgc-individual-controls .components-button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.wgc-individual-controls .components-button:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ===== QUICK ACTIONS ===== */
+.wgc-quick-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    width: 100%;
+}
+
+.wgc-quick-actions .components-button {
+    font-size: 13px !important;
+    padding: 10px 16px !important;
+    text-align: center !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+    font-weight: 500 !important;
+    justify-content: center !important;
+    gap: 6px !important;
+}
+
+.wgc-quick-actions .components-button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* ===== PANEL BODY STYLING ===== */
+.components-panel__body .wgc-ai-controls {
+    padding: 0;
+}
+
+.components-panel__body-title {
+    font-weight: 600 !important;
+    color: #1d2327 !important;
+}
+
+.components-panel__body-toggle {
+    color: #1d2327 !important;
+}
+
+.components-panel__body-toggle:hover {
+    color: #667eea !important;
+}
+
+/* ===== FORM CONTROLS ===== */
+.components-base-control__label {
+    font-weight: 600 !important;
+    color: #1d2327 !important;
+    margin-bottom: 8px !important;
+}
+
+.components-text-control__input,
+.components-select-control__input,
+.components-textarea-control__input {
+    border: 1px solid #c3c4c7 !important;
+    border-radius: 4px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    transition: border-color 0.2s ease !important;
+}
+
+.components-text-control__input:focus,
+.components-select-control__input:focus,
+.components-textarea-control__input:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1) !important;
+    outline: none !important;
+}
+
+.components-base-control__help {
+    font-size: 12px !important;
+    color: #646970 !important;
+    margin-top: 4px !important;
+    line-height: 1.4 !important;
+}
+
+/* ===== TOGGLE CONTROLS ===== */
+.components-toggle-control__label {
+    font-weight: 500 !important;
+    color: #1d2327 !important;
+}
+
+.components-form-toggle {
+    background: #c3c4c7 !important;
+    border: none !important;
+    border-radius: 12px !important;
+    width: 40px !important;
+    height: 20px !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.components-form-toggle.is-checked {
+    background: #667eea !important;
+}
+
+.components-form-toggle__track {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 12px !important;
+}
+
+.components-form-toggle__thumb {
+    background: white !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 16px !important;
+    height: 16px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+    transition: transform 0.2s ease !important;
+}
+
+.components-form-toggle.is-checked .components-form-toggle__thumb {
+    transform: translateX(20px) !important;
+}
+
+/* ===== RANGE CONTROLS ===== */
+.components-range-control__track {
+    background: #c3c4c7 !important;
+    height: 4px !important;
+    border-radius: 2px !important;
+}
+
+.components-range-control__track-fill {
+    background: #667eea !important;
+    height: 4px !important;
+    border-radius: 2px !important;
+}
+
+.components-range-control__thumb {
+    background: #667eea !important;
+    border: 2px solid white !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+.components-range-control__thumb:hover {
+    background: #5a6fd8 !important;
+    transform: scale(1.1) !important;
+}
+
+/* ===== SELECT CONTROLS ===== */
+.components-select-control__input {
+    background: white !important;
+    color: #1d2327 !important;
+}
+
+.components-select-control__input:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* ===== SPINNER STYLING ===== */
+.components-spinner {
+    width: 20px !important;
+    height: 20px !important;
+    border: 2px solid transparent !important;
+    border-top-color: currentColor !important;
+    border-radius: 50% !important;
+    animation: wgc-spin 1s linear infinite !important;
+}
+
+@keyframes wgc-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 600px) {
+    .wgc-individual-controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .wgc-generate-all-btn {
+        padding: 14px 20px !important;
+        font-size: 14px !important;
+    }
+    
+    .wgc-individual-controls .components-button {
+        font-size: 13px !important;
+        padding: 10px 14px !important;
+    }
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+@media (prefers-color-scheme: dark) {
+    .wgc-gutenberg-notice.is-success {
+        background: #1a2f1a;
+        color: #4caf50;
+    }
+    
+    .wgc-gutenberg-notice.is-error {
+        background: #2f1a1a;
+        color: #f44336;
+    }
+    
+    .wgc-gutenberg-notice.is-warning {
+        background: #2f251a;
+        color: #ff9800;
+    }
+    
+    .wgc-gutenberg-notice.is-info {
+        background: #1a1f2f;
+        color: #2196f3;
+    }
+    
+    .components-base-control__label,
+    .components-panel__body-title,
+    .components-toggle-control__label {
+        color: #f0f0f1 !important;
+    }
+    
+    .components-text-control__input,
+    .components-select-control__input,
+    .components-textarea-control__input {
+        background: #2c2c2c !important;
+        color: #f0f0f1 !important;
+        border-color: #3c434a !important;
+    }
+    
+    .components-text-control__input:focus,
+    .components-select-control__input:focus,
+    .components-textarea-control__input:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+.components-button:focus {
+    outline: 2px solid #667eea !important;
+    outline-offset: 2px !important;
+}
+
+.components-form-toggle:focus {
+    outline: 2px solid #667eea !important;
+    outline-offset: 2px !important;
+}
+
+.components-range-control__thumb:focus {
+    outline: 2px solid #667eea !important;
+    outline-offset: 2px !important;
+}
+
+/* ===== ANIMATIONS ===== */
+.wgc-generate-all-btn,
+.wgc-individual-controls .components-button,
+.wgc-quick-actions .components-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.wgc-generate-all-btn::before,
+.wgc-individual-controls .components-button::before,
+.wgc-quick-actions .components-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.wgc-generate-all-btn:hover::before,
+.wgc-individual-controls .components-button:hover::before,
+.wgc-quick-actions .components-button:hover::before {
+    left: 100%;
+}
+
+/* ===== LOADING STATES ===== */
+.wgc-generate-all-btn.is-loading,
+.wgc-individual-controls .components-button.is-loading,
+.wgc-quick-actions .components-button.is-loading {
+    color: transparent !important;
+}
+
+.wgc-generate-all-btn.is-loading::after,
+.wgc-individual-controls .components-button.is-loading::after,
+.wgc-quick-actions .components-button.is-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: wgc-spin 1s linear infinite;
+}
+
+/* ===== TOOLTIP STYLING ===== */
+.components-tooltip {
+    background: #1d2327 !important;
+    color: white !important;
+    border-radius: 4px !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+.components-tooltip::before {
+    border-top-color: #1d2327 !important;
+}
+
+/* ===== PANEL ROW SPACING ===== */
+.components-panel__row {
+    margin-bottom: 16px !important;
+}
+
+.components-panel__row:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* ===== ICON STYLING ===== */
+.wgc-individual-controls .components-button .dashicon,
+.wgc-quick-actions .components-button .dashicon {
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+}
+
+.wgc-generate-all-btn .dashicon {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+}
