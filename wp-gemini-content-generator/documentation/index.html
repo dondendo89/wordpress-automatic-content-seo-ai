@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WP Gemini Content Generator - Documentation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.7; 
+            color: #2c3e50; 
+            background: #f8f9fa;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            padding: 40px; 
+            text-align: center; 
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+        .header h1 { 
+            font-size: 2.5em; 
+            margin-bottom: 10px;
+        }
+        .header p { 
+            font-size: 1.2em; 
+            opacity: 0.9;
+        }
+        .nav { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 30px;
+        }
+        .nav ul { 
+            list-style: none; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 20px;
+        }
+        .nav a { 
+            color: #667eea; 
+            text-decoration: none; 
+            font-weight: 600;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .nav a:hover { 
+            background: #667eea; 
+            color: white;
+        }
+        h2 { 
+            color: #2c3e50; 
+            font-size: 1.8em; 
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        h3 { 
+            color: #34495e; 
+            font-size: 1.4em; 
+            margin: 25px 0 10px 0;
+        }
+        h4 { 
+            color: #7f8c8d; 
+            font-size: 1.2em; 
+            margin: 20px 0 8px 0;
+        }
+        .section { 
+            margin-bottom: 40px; 
+            padding: 25px; 
+            background: #f8f9fa; 
+            border-radius: 10px;
+        }
+        .feature-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+            margin: 20px 0;
+        }
+        .feature-card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .feature-card h4 { 
+            color: #2c3e50; 
+            margin-bottom: 10px;
+        }
+        .code-block { 
+            background: #2c3e50; 
+            color: #ecf0f1; 
+            padding: 20px; 
+            border-radius: 8px; 
+            font-family: 'Courier New', monospace; 
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .warning { 
+            background: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            color: #856404; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 15px 0;
+        }
+        .success { 
+            background: #d4edda; 
+            border: 1px solid #c3e6cb; 
+            color: #155724; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 15px 0;
+        }
+        .info { 
+            background: #d1ecf1; 
+            border: 1px solid #bee5eb; 
+            color: #0c5460; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 15px 0;
+        }
+        .step { 
+            background: white; 
+            border-left: 4px solid #667eea; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+        .step h4 { 
+            color: #667eea; 
+            margin-bottom: 10px;
+        }
+        ul, ol { 
+            margin: 15px 0; 
+            padding-left: 25px;
+        }
+        li { 
+            margin-bottom: 8px;
+        }
+        .toc { 
+            background: #e9ecef; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 20px 0;
+        }
+        .toc h3 { 
+            margin-top: 0;
+        }
+        .toc ul { 
+            list-style: none; 
+            padding-left: 0;
+        }
+        .toc a { 
+            color: #667eea; 
+            text-decoration: none;
+        }
+        .toc a:hover { 
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            .nav ul { flex-direction: column; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 WP Gemini Content Generator</h1>
+            <p>Complete Documentation & User Guide</p>
+            <p>Version 1.0.0 | Professional AI Content Generation for WordPress</p>
+        </div>
+
+        <div class="nav">
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#configuration">Configuration</a></li>
+                <li><a href="#usage">Usage</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+                <li><a href="#support">Support</a></li>
+            </ul>
+        </div>
+
+        <div class="toc">
+            <h3>📋 Table of Contents</h3>
+            <ul>
+                <li><a href="#overview">1. Plugin Overview</a></li>
+                <li><a href="#installation">2. Installation Guide</a></li>
+                <li><a href="#configuration">3. Configuration</a></li>
+                <li><a href="#usage">4. Usage Instructions</a></li>
+                <li><a href="#features">5. Advanced Features</a></li>
+                <li><a href="#troubleshooting">6. Troubleshooting</a></li>
+                <li><a href="#support">7. Support & Contact</a></li>
+            </ul>
+        </div>
+
+        <section id="overview" class="section">
+            <h2>📖 Plugin Overview</h2>
+            
+            <p><strong>WP Gemini Content Generator</strong> is a professional WordPress plugin that uses Google's advanced Gemini AI to generate high-quality, SEO-optimized content for your posts, pages, and WooCommerce products.</p>
+
+            <h3>🎯 Key Benefits</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🤖 AI-Powered Content</h4>
+                    <p>Generate 2000+ character descriptions using Google's latest Gemini AI technology for superior content quality.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🌍 Multi-Language Support</h4>
+                    <p>Support for 12 languages including English, Italian, Spanish, French, German, and more.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🛒 WooCommerce Ready</h4>
+                    <p>Special product descriptions that drive sales and improve conversion rates.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚡ Bulk Processing</h4>
+                    <p>Process hundreds of posts simultaneously with background job processing.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📈 SEO Optimized</h4>
+                    <p>Generate meta descriptions, tags, and SEO-friendly content structure.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔒 Secure & Reliable</h4>
+                    <p>WordPress standards compliant with comprehensive security features.</p>
+                </div>
+            </div>
+
+            <h3>📊 System Requirements</h3>
+            <ul>
+                <li><strong>WordPress:</strong> 6.0 or higher</li>
+                <li><strong>PHP:</strong> 7.4 or higher (8.0+ recommended)</li>
+                <li><strong>Google Gemini API Key:</strong> Free from Google AI Studio</li>
+                <li><strong>Internet Connection:</strong> Required for API calls</li>
+                <li><strong>Extensions:</strong> cURL and JSON must be enabled</li>
+            </ul>
+        </section>
+
+        <section id="installation" class="section">
+            <h2>🔧 Installation Guide</h2>
+
+            <h3>Method 1: WordPress Admin (Recommended)</h3>
+            <div class="step">
+                <h4>Step 1: Download Plugin</h4>
+                <p>Download the plugin ZIP file from CodeCanyon or your purchase confirmation email.</p>
+            </div>
+            <div class="step">
+                <h4>Step 2: Upload Plugin</h4>
+                <p>Go to <strong>Plugins → Add New → Upload Plugin</strong> in your WordPress admin.</p>
+            </div>
+            <div class="step">
+                <h4>Step 3: Install & Activate</h4>
+                <p>Upload the ZIP file, click <strong>Install Now</strong>, then <strong>Activate Plugin</strong>.</p>
+            </div>
+
+            <h3>Method 2: FTP Upload</h3>
+            <div class="step">
+                <h4>Step 1: Extract Files</h4>
+                <p>Extract the ZIP file to your computer to get the <code>wp-gemini-content-generator</code> folder.</p>
+            </div>
+            <div class="step">
+                <h4>Step 2: Upload via FTP</h4>
+                <p>Upload the folder to <code>/wp-content/plugins/</code> on your server.</p>
+            </div>
+            <div class="step">
+                <h4>Step 3: Activate</h4>
+                <p>Go to <strong>Plugins</strong> in WordPress admin and activate the plugin.</p>
+            </div>
+
+            <div class="success">
+                <strong>✅ Installation Complete!</strong> The plugin is now installed and ready for configuration.
+            </div>
+        </section>
+
+        <section id="configuration" class="section">
+            <h2>⚙️ Configuration</h2>
+
+            <h3>1. Get Your Gemini API Key</h3>
+            <div class="step">
+                <h4>Step 1: Visit Google AI Studio</h4>
+                <p>Go to <a href="https://aistudio.google.com/u/3/api-keys" target="_blank">Google AI Studio</a> and sign in with your Google account.</p>
+            </div>
+            <div class="step">
+                <h4>Step 2: Create API Key</h4>
+                <p>Click <strong>"Create API Key"</strong> and copy the generated key.</p>
+            </div>
+            <div class="step">
+                <h4>Step 3: Configure Plugin</h4>
+                <p>Go to <strong>Settings → Gemini Generator</strong> and paste your API key.</p>
+            </div>
+
+            <h3>2. Plugin Settings</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Main Settings</h4>
+                    <ul>
+                        <li><strong>API Key:</strong> Your Gemini API key</li>
+                        <li><strong>Language:</strong> Content generation language</li>
+                        <li><strong>Post Types:</strong> Which post types to enable</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Content Settings</h4>
+                    <ul>
+                        <li><strong>Content Length:</strong> 500-5000 characters</li>
+                        <li><strong>Content Mode:</strong> Append or replace</li>
+                        <li><strong>Emojis & Icons:</strong> Visual enhancement</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>SEO Settings</h4>
+                    <ul>
+                        <li><strong>Meta Descriptions:</strong> Auto-generate</li>
+                        <li><strong>Tags:</strong> Automatic tagging</li>
+                        <li><strong>Focus Keywords:</strong> Custom targeting</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Bulk Processing</h4>
+                    <ul>
+                        <li><strong>Batch Size:</strong> 1-20 items per batch</li>
+                        <li><strong>Background Processing:</strong> WordPress cron</li>
+                        <li><strong>Error Handling:</strong> Comprehensive reporting</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info">
+                <strong>💡 Pro Tip:</strong> Start with default settings and adjust based on your needs. The plugin works great out of the box!
+            </div>
+        </section>
+
+        <section id="usage" class="section">
+            <h2>📝 Usage Instructions</h2>
+
+            <h3>Single Content Generation</h3>
+            <div class="step">
+                <h4>Step 1: Edit Post/Page</h4>
+                <p>Go to any post, page, or product editor in WordPress.</p>
+            </div>
+            <div class="step">
+                <h4>Step 2: Generate Content</h4>
+                <p>Look for the <strong>"Gemini Content Generator"</strong> meta box and click <strong>"Generate Content"</strong>.</p>
+            </div>
+            <div class="step">
+                <h4>Step 3: Review & Save</h4>
+                <p>Review the generated content in the preview and save your post.</p>
+            </div>
+
+            <h3>Bulk Content Generation</h3>
+            <div class="step">
+                <h4>Step 1: Go to Settings</h4>
+                <p>Navigate to <strong>Settings → Gemini Generator → Bulk Generation</strong> tab.</p>
+            </div>
+            <div class="step">
+                <h4>Step 2: Configure Options</h4>
+                <p>Select post types, set batch size, and choose processing options.</p>
+            </div>
+            <div class="step">
+                <h4>Step 3: Start Processing</h4>
+                <p>Click <strong>"Start Bulk Generation"</strong> and monitor progress.</p>
+            </div>
+
+            <h3>Meta Description Generation</h3>
+            <div class="step">
+                <h4>Individual Generation</h4>
+                <p>Use the <strong>"Generate Meta Description"</strong> button in the post editor.</p>
+            </div>
+            <div class="step">
+                <h4>Bulk Generation</h4>
+                <p>Enable <strong>"Include meta descriptions and tags"</strong> in bulk processing.</p>
+            </div>
+
+            <h3>Tag Generation</h3>
+            <div class="step">
+                <h4>Individual Generation</h4>
+                <p>Use the <strong>"Generate Tags"</strong> button in the post editor.</p>
+            </div>
+            <div class="step">
+                <h4>Bulk Generation</h4>
+                <p>Enable <strong>"Include meta descriptions and tags"</strong> in bulk processing.</p>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Important:</strong> Always review generated content before publishing. AI-generated content should be used as a starting point and may need editing.
+            </div>
+        </section>
+
+        <section id="features" class="section">
+            <h2>🚀 Advanced Features</h2>
+
+            <h3>AI-Powered Content Generation</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Smart Prompts</h4>
+                    <p>Intelligent prompts based on post title, content, and type for optimal results.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Context Awareness</h4>
+                    <p>AI understands your content context and generates relevant descriptions.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Quality Control</h4>
+                    <p>Built-in quality checks and content validation for professional results.</p>
+                </div>
+            </div>
+
+            <h3>WooCommerce Integration</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Product Descriptions</h4>
+                    <p>Sales-oriented product descriptions that highlight features and benefits.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Conversion Optimization</h4>
+                    <p>Content designed to increase sales and improve conversion rates.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Bulk Product Updates</h4>
+                    <p>Update hundreds of product descriptions simultaneously.</p>
+                </div>
+            </div>
+
+            <h3>SEO Features</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Meta Descriptions</h4>
+                    <p>SEO-optimized meta descriptions for better search engine visibility.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Automatic Tagging</h4>
+                    <p>Generate relevant tags based on content analysis.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Focus Keywords</h4>
+                    <p>Integrate custom keywords for targeted SEO optimization.</p>
+                </div>
+            </div>
+
+            <h3>Performance & Reliability</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Background Processing</h4>
+                    <p>Non-blocking bulk operations using WordPress cron jobs.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Error Handling</h4>
+                    <p>Comprehensive error reporting and automatic recovery.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Progress Tracking</h4>
+                    <p>Real-time progress updates and status monitoring.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="troubleshooting" class="section">
+            <h2>🔧 Troubleshooting</h2>
+
+            <h3>Common Issues</h3>
+
+            <h4>Plugin Not Working After Activation</h4>
+            <div class="warning">
+                <strong>Possible Causes:</strong>
+                <ul>
+                    <li>Missing cURL or JSON extensions</li>
+                    <li>Invalid Gemini API key</li>
+                    <li>PHP errors in error logs</li>
+                    <li>Insufficient server resources</li>
+                </ul>
+            </div>
+            <div class="code-block">
+# Check PHP extensions
+php -m | grep -E "(curl|json)"
+
+# Check WordPress error logs
+tail -f /path/to/wordpress/wp-content/debug.log
+            </div>
+
+            <h4>Content Not Generating</h4>
+            <div class="warning">
+                <strong>Possible Causes:</strong>
+                <ul>
+                    <li>Invalid or expired API key</li>
+                    <li>Insufficient API credits</li>
+                    <li>Network connectivity issues</li>
+                    <li>Server firewall blocking requests</li>
+                </ul>
+            </div>
+            <div class="code-block">
+# Test API connectivity
+curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=YOUR_API_KEY" \
+-H "Content-Type: application/json" \
+-d '{"contents":[{"parts":[{"text":"Test"}]}]}'
+            </div>
+
+            <h4>Bulk Processing Fails</h4>
+            <div class="warning">
+                <strong>Possible Causes:</strong>
+                <ul>
+                    <li>Server timeout limits</li>
+                    <li>Memory exhaustion</li>
+                    <li>Database connection issues</li>
+                    <li>Large batch sizes</li>
+                </ul>
+            </div>
+            <div class="code-block">
+# Reduce batch size in settings
+# Check server timeout settings
+# Monitor server resources during processing
+            </div>
+
+            <h3>Error Messages</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>"Missing Gemini API key"</h4>
+                    <p><strong>Solution:</strong> Set your API key in Settings → Gemini Generator</p>
+                </div>
+                <div class="feature-card">
+                    <h4>"No posts found to process"</h4>
+                    <p><strong>Solution:</strong> Check post type selection and existing content</p>
+                </div>
+                <div class="feature-card">
+                    <h4>"API Error"</h4>
+                    <p><strong>Solution:</strong> Verify your Gemini API key and credits</p>
+                </div>
+                <div class="feature-card">
+                    <h4>"Network error"</h4>
+                    <p><strong>Solution:</strong> Check internet connection and server configuration</p>
+                </div>
+            </div>
+
+            <h3>Performance Optimization</h3>
+            <div class="info">
+                <strong>For Large Sites:</strong>
+                <ul>
+                    <li>Reduce batch size to 3-5 items</li>
+                    <li>Process during off-peak hours</li>
+                    <li>Monitor server resources</li>
+                    <li>Consider upgrading hosting plan</li>
+                </ul>
+            </div>
+
+            <h3>Debug Mode</h3>
+            <div class="code-block">
+# Enable WordPress debug mode
+define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
+define('WP_DEBUG_DISPLAY', false);
+            </div>
+        </section>
+
+        <section id="support" class="section">
+            <h2>📞 Support & Contact</h2>
+
+            <h3>Getting Help</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>CodeCanyon Support</h4>
+                    <p>Official support through CodeCanyon's support system for technical issues and bug reports.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Documentation</h4>
+                    <p>Comprehensive documentation with step-by-step guides and troubleshooting tips.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Community</h4>
+                    <p>WordPress community support and user forums for additional help.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Updates</h4>
+                    <p>Regular updates with new features, bug fixes, and improvements.</p>
+                </div>
+            </div>
+
+            <h3>Plugin Information</h3>
+            <div class="info">
+                <ul>
+                    <li><strong>Version:</strong> 1.0.0</li>
+                    <li><strong>WordPress Compatibility:</strong> 6.0+</li>
+                    <li><strong>PHP Compatibility:</strong> 7.4+</li>
+                    <li><strong>License:</strong> GPL-2.0-or-later</li>
+                    <li><strong>Support:</strong> CodeCanyon support system</li>
+                    <li><strong>Updates:</strong> Lifetime updates included</li>
+                </ul>
+            </div>
+
+            <h3>Rate & Review</h3>
+            <div class="success">
+                <strong>⭐ Love the Plugin?</strong> Please consider leaving a review on CodeCanyon. Your feedback helps us improve and helps other users make informed decisions!
+            </div>
+
+            <h3>Feature Requests</h3>
+            <p>Have an idea for a new feature? We'd love to hear from you! Submit your suggestions through the CodeCanyon support system.</p>
+
+            <h3>Bug Reports</h3>
+            <p>Found a bug? Please report it through the support system with:</p>
+            <ul>
+                <li>Detailed description of the issue</li>
+                <li>Steps to reproduce</li>
+                <li>WordPress version and PHP version</li>
+                <li>Error messages (if any)</li>
+                <li>Screenshots (if helpful)</li>
+            </ul>
+        </section>
+
+        <div class="section">
+            <h2>🎉 Thank You!</h2>
+            <p>Thank you for choosing <strong>WP Gemini Content Generator</strong>! We hope this plugin helps you create amazing content and grow your website.</p>
+            
+            <div class="success">
+                <strong>🚀 Ready to get started?</strong> Follow the installation guide above and start generating professional content with AI!
+            </div>
+        </div>
+    </div>
+</body>
+</html>

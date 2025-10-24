@@ -1,0 +1,628 @@
+/* WP Gemini Content Generator - Admin Styles */
+
+/* Main Admin Container */
+.wgc-admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wgc-header-content h2 {
+    color: white;
+    margin: 0 0 10px 0;
+    font-size: 1.8em;
+}
+
+.wgc-header-content p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1em;
+}
+
+.wgc-header-stats {
+    display: flex;
+    gap: 30px;
+}
+
+.wgc-stat {
+    text-align: center;
+}
+
+.wgc-stat-number {
+    display: block;
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.wgc-stat-label {
+    font-size: 0.9em;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Tabs */
+.wgc-tabs {
+    margin-top: 20px;
+}
+
+.wgc-tab-nav {
+    display: flex;
+    border-bottom: 2px solid #e1e8ed;
+    margin-bottom: 30px;
+}
+
+.wgc-tab-link {
+    padding: 15px 25px;
+    text-decoration: none;
+    color: #7f8c8d;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.wgc-tab-link:hover,
+.wgc-tab-link.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.wgc-tab-content {
+    display: none;
+}
+
+.wgc-tab-content.active {
+    display: block;
+}
+
+/* Form Styles */
+.wgc-form-group {
+    margin-bottom: 25px;
+}
+
+.wgc-form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2c3e50;
+}
+
+.wgc-input,
+.wgc-multi-select {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 15px;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.wgc-input:focus,
+.wgc-multi-select:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.wgc-checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.wgc-checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
+.wgc-checkbox-group input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.2);
+}
+
+/* Meta Box Styles */
+.wgc-meta-box {
+    padding: 15px 0;
+}
+
+.wgc-product-notice {
+    background: #e8f5e8;
+    border: 1px solid #4caf50;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 15px;
+    color: #2e7d32;
+}
+
+.wgc-generation-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.wgc-generation-controls .button {
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wgc-individual-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.wgc-individual-controls .button {
+    font-size: 12px;
+    padding: 8px 12px;
+    height: auto;
+    line-height: 1.4;
+}
+
+#wgc-generate-all {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 12px 20px;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+}
+
+#wgc-generate-all:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+    transform: translateY(-1px);
+}
+
+.wgc-generated-notice {
+    background: #f0f8ff;
+    border: 1px solid #2196f3;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 15px;
+    color: #1976d2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wgc-preview {
+    background: #f8f9fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.wgc-preview h4 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+}
+
+.wgc-preview-content {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    padding: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.wgc-preview-stats {
+    font-size: 0.9em;
+    color: #7f8c8d;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Bulk Generation */
+.wgc-bulk-section {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 10px;
+    padding: 30px;
+}
+
+.wgc-bulk-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin: 25px 0;
+}
+
+.wgc-bulk-status {
+    background: #f8f9fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 25px;
+    min-height: 100px;
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
+/* Documentation */
+.wgc-documentation {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 10px;
+    padding: 30px;
+}
+
+.wgc-doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 25px;
+}
+
+.wgc-doc-card {
+    background: #f8f9fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 25px;
+}
+
+.wgc-doc-card h3 {
+    color: #2c3e50;
+    margin: 0 0 15px 0;
+    font-size: 1.3em;
+}
+
+.wgc-doc-card h4 {
+    color: #34495e;
+    margin: 15px 0 10px 0;
+    font-size: 1.1em;
+}
+
+.wgc-doc-card ul,
+.wgc-doc-card ol {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.wgc-doc-card li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+/* Support */
+.wgc-support {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 10px;
+    padding: 30px;
+}
+
+.wgc-support-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 25px;
+}
+
+.wgc-support-card {
+    background: #f8f9fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    padding: 25px;
+}
+
+.wgc-support-card h3 {
+    color: #2c3e50;
+    margin: 0 0 15px 0;
+    font-size: 1.3em;
+}
+
+.wgc-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wgc-info-table td {
+    padding: 8px 0;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.wgc-info-table td:first-child {
+    width: 40%;
+    font-weight: 600;
+}
+
+.wgc-info-table td:last-child {
+    color: #7f8c8d;
+}
+
+/* Loading States */
+.wgc-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.wgc-loading .button {
+    position: relative;
+}
+
+.wgc-loading .button:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: wgc-spin 1s linear infinite;
+}
+
+@keyframes wgc-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Success/Error States */
+.wgc-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+}
+
+.wgc-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wgc-admin-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .wgc-header-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .wgc-tab-nav {
+        flex-wrap: wrap;
+    }
+    
+    .wgc-tab-link {
+        flex: 1;
+        text-align: center;
+        min-width: 120px;
+    }
+    
+    .wgc-bulk-controls,
+    .wgc-doc-grid,
+    .wgc-support-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .wgc-checkbox-group {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .wgc-admin-header {
+        padding: 20px;
+    }
+    
+    .wgc-header-content h2 {
+        font-size: 1.5em;
+    }
+    
+    .wgc-stat-number {
+        font-size: 1.5em;
+    }
+    
+    .wgc-bulk-section,
+    .wgc-documentation,
+    .wgc-support {
+        padding: 20px;
+    }
+}
+
+/* WordPress Admin Integration */
+.wrap h1 {
+    color: #2c3e50;
+}
+
+.wrap .form-table th {
+    width: 200px;
+    padding: 20px 10px 20px 0;
+}
+
+.wrap .form-table td {
+    padding: 15px 10px;
+}
+
+.wrap .description {
+    font-style: italic;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+/* Button Enhancements */
+.button-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+}
+
+.button-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+    transform: translateY(-1px);
+}
+
+.button-secondary {
+    border-color: #667eea;
+    color: #667eea;
+    transition: all 0.3s ease;
+}
+
+.button-secondary:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* Tooltip Styles */
+.wgc-tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.wgc-tooltip:after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.wgc-tooltip:hover:after {
+    opacity: 1;
+}
+
+/* Progress Bar */
+.wgc-progress {
+    width: 100%;
+    height: 20px;
+    background: #e1e8ed;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 15px 0;
+}
+
+.wgc-progress-bar {
+    height: 100%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.wgc-progress-bar:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+    animation: wgc-shimmer 2s infinite;
+}
+
+@keyframes wgc-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Status Indicators */
+.wgc-status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.wgc-status-indicator.success {
+    background: #4caf50;
+}
+
+.wgc-status-indicator.error {
+    background: #f44336;
+}
+
+.wgc-status-indicator.warning {
+    background: #ff9800;
+}
+
+.wgc-status-indicator.info {
+    background: #2196f3;
+}
+
+/* Code Blocks */
+.wgc-code-block {
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 15px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    overflow-x: auto;
+    margin: 15px 0;
+}
+
+/* Notices */
+.wgc-notice {
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    border-left: 4px solid;
+}
+
+.wgc-notice.info {
+    background: #e3f2fd;
+    border-color: #2196f3;
+    color: #1976d2;
+}
+
+.wgc-notice.success {
+    background: #e8f5e8;
+    border-color: #4caf50;
+    color: #2e7d32;
+}
+
+.wgc-notice.warning {
+    background: #fff3e0;
+    border-color: #ff9800;
+    color: #f57c00;
+}
+
+.wgc-notice.error {
+    background: #ffebee;
+    border-color: #f44336;
+    color: #d32f2f;
+}

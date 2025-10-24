@@ -10,6 +10,8 @@
     input { width: 420px; padding: 8px; }
     .description { color:#555; margin:6px 0; }
     .card { border:1px solid #ddd; border-radius:8px; padding:16px; max-width:640px; }
+    h2 { margin-top: 24px; }
+    ul { margin-left: 20px; }
   </style>
 </head>
 <body>
@@ -18,6 +20,23 @@
     <input type="password" placeholder="AIza..." />
     <p class="description">Your Gemini API key. Stored in WordPress options.</p>
     <p class="description"><a href="https://aistudio.google.com/u/7/api-keys" target="_blank" rel="nofollow noopener">Google AI Studio — Get Gemini API key</a></p>
+
+    <hr />
+    <label>Meta Description</label>
+    <input type="checkbox" checked /> Enable meta description generation
+    <p class="description">Adds a button in the post editor to generate a 155–160 characters meta description.</p>
+
+    <label style="margin-top:12px;">Tags Generation</label>
+    <input type="checkbox" checked /> Enable tags generation
+    <p class="description">Adds a button in the post editor to generate and assign suggested tags.</p>
   </div>
+
+  <hr />
+  <h2>Security & Privacy</h2>
+  <ul>
+    <li>API keys are stored only in WordPress options.</li>
+    <li>Requests use HTTPS and run only on user action.</li>
+    <li>Admin-only capabilities and nonces protect AJAX operations.</li>
+  </ul>
 </body>
 </html>

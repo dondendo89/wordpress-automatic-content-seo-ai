@@ -56,6 +56,66 @@
 			});
 	});
 
+	$(document).on('click', '.wgc-generate-meta', function(e){
+		e.preventDefault();
+		var $btn = $(this);
+		var postId = $btn.data('post-id');
+		var nonce = $btn.data('nonce');
+		var original = $btn.text();
+		$btn.prop('disabled', true).html('<span class="spinner is-active" style="float: none; margin: 0 5px 0 0;"></span>' + ((WGC && WGC.i18n && WGC.i18n.generating) || 'Generating...'));
+
+		postAjax('wgc_generate_meta', { postId: postId, nonce: nonce })
+			.done(function(res){
+				if(res && res.success){
+					$btn.html('<span class="dashicons dashicons-yes-alt" style="color: #46b450; margin-right: 5px;"></span>' + ((WGC && WGC.i18n && WGC.i18n.done) || 'Done'));
+					var text = (res.data && res.data.meta_description) || '';
+					if(text){
+						$('#wgc-meta-preview-content').text(text);
+						$('#wgc-meta-preview').show();
+						// Try to update common SEO meta fields if present
+						$('input#yoast_wpseo_metadesc, input[name="_yoast_wpseo_metadesc"], textarea#rank_math_description, textarea[name="rank_math_description"]').val(text).trigger('change');
+					}
+					showInlineNotice('success', 'Meta description generated.');
+				}else{
+					showInlineNotice('error', (res && res.data && res.data.message) || 'Error');
+					$btn.html(original).prop('disabled', false);
+				}
+			})
+			.fail(function(){
+				showInlineNotice('error', 'Error');
+				$btn.html(original).prop('disabled', false);
+			});
+	});
+
+	$(document).on('click', '.wgc-generate-tags', function(e){
+		e.preventDefault();
+		var $btn = $(this);
+		var postId = $btn.data('post-id');
+		var nonce = $btn.data('nonce');
+		var original = $btn.text();
+		$btn.prop('disabled', true).html('<span class="spinner is-active" style="float: none; margin: 0 5px 0 0;"></span>' + ((WGC && WGC.i18n && WGC.i18n.generating) || 'Generating...'));
+
+		postAjax('wgc_generate_tags', { postId: postId, nonce: nonce })
+			.done(function(res){
+				if(res && res.success){
+					$btn.html('<span class="dashicons dashicons-yes-alt" style="color: #46b450; margin-right: 5px;"></span>' + ((WGC && WGC.i18n && WGC.i18n.done) || 'Done'));
+					var tags = (res.data && res.data.tags) || [];
+					if(tags && tags.length){
+						$('#wgc-tags-preview-content').text(tags.join(', '));
+						$('#wgc-tags-preview').show();
+					}
+					showInlineNotice('success', 'Tags generated and assigned.');
+				}else{
+					showInlineNotice('error', (res && res.data && res.data.message) || 'Error');
+					$btn.html(original).prop('disabled', false);
+				}
+			})
+			.fail(function(){
+				showInlineNotice('error', 'Error');
+				$btn.html(original).prop('disabled', false);
+			});
+	});
+
 	var bulkJobInterval = null;
 
 	$(document).on('click', '#wgc-bulk-generate', function(e){

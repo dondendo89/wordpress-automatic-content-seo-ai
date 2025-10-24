@@ -11,6 +11,8 @@ Generate long, SEO-friendly descriptions (2000+ characters) for WordPress posts 
 - **Customizable Settings**: Control content generation with various options
 - **Secure & Safe**: WordPress-native security with nonces and capability checks
 - **Easy to Use**: Simple one-click generation from post editor
+- **Meta Description Generator**: Creates 155–160 char meta descriptions; updates Yoast & Rank Math fields
+- **Tags Generator**: Suggests and assigns clean tags automatically for each post
 
 ## Requirements
 - WordPress 6.0+
@@ -20,7 +22,7 @@ Generate long, SEO-friendly descriptions (2000+ characters) for WordPress posts 
 - JSON extension enabled
 
 ## Compatibility
-- **WordPress**: 6.0, 6.1, 6.2, 6.3, 6.4, 6.5+
+- **WordPress**: 6.0 → 6.8.3
 - **PHP**: 7.4, 8.0, 8.1, 8.2, 8.3+
 - **Themes**: Compatible with all WordPress themes
 - **Plugins**: Tested with popular plugins (Yoast SEO, Elementor, WooCommerce)
@@ -35,14 +37,27 @@ Generate long, SEO-friendly descriptions (2000+ characters) for WordPress posts 
 2. Paste your Google Gemini API key and click Save.
 3. (Optional) Use the Bulk Update section to process multiple posts/pages.
 
+## Security & Privacy
+- API keys are stored only in WordPress options (not autoloaded).
+- Admin-only capabilities (`manage_options`) guard settings updates.
+- Nonces protect all AJAX operations.
+- Requests use HTTPS and only run when you trigger generation.
+
 ## Usage (Per Post/Page)
 - Edit any Post or Page.
-- In the side meta box "Content Studio AI", click "Generate Long Description".
-- The generated text (minimum 2000 characters) will be appended to the end of the content.
+- In the side meta box "Content Studio AI":
+- Click "Generate Long Description" to insert SEO content.
+- Click "Generate Meta Description" to auto-fill meta fields.
+- Click "Generate Tags" to get suggested tags.
 
 ## Bulk Generation
 - Settings → Content Studio AI → "Run Bulk Generation".
 - Adjust batch size if needed. The tool skips already processed posts/pages.
+
+## Demo & Screenshots
+- Demo HTML preview: `wp-content-studio-ai/assets/preview/live/index.html`
+- Screenshots: `wp-content-studio-ai/assets/preview/live/img/`
+- Envato JPG bundle: `wp-content-studio-ai/assets/preview/cc-preview-screenshots.zip`
 
 ## Notes
 - The plugin appends content and adds a marker: `<!-- AI Generated Description -->`.

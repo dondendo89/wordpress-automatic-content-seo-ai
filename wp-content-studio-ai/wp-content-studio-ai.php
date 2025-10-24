@@ -3,13 +3,13 @@
  * Plugin Name:       WP Content Studio AI
  * Plugin URI:        https://example.com/wp-content-studio-ai
  * Description:       AI-powered long descriptions for WordPress and WooCommerce using AI content APIs.
- * Version:           1.0.1
+ * Version:           1.0.0
  * Author:            WP Content Studio AI
  * Author URI:        https://example.com
  * Text Domain:       wp-content-studio-ai
  * Domain Path:       /languages
  * Requires at least: 6.0
- * Tested up to:      6.6
+ * Tested up to:      6.8.3
  * Requires PHP:      7.4
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -27,6 +27,8 @@ define( 'WGC_OPTION_LANGUAGE', 'wgc_language' );
 define( 'WGC_OPTION_POST_TYPES', 'wgc_post_types' );
 define( 'WGC_OPTION_APPEND_MODE', 'wgc_append_mode' );
 define( 'WGC_OPTION_EMOJI_ICONS', 'wgc_emoji_icons' );
+define( 'WGC_OPTION_ENABLE_META', 'wgc_enable_meta' );
+define( 'WGC_OPTION_ENABLE_TAGS', 'wgc_enable_tags' );
 
 class WPGeminiContentGenerator {
 	public function __construct() {
@@ -38,6 +40,8 @@ class WPGeminiContentGenerator {
 
 		// AJAX actions for single generate and bulk generate
 		add_action( 'wp_ajax_wgc_generate_for_post', [ $this, 'ajax_generate_for_post' ] );
+		add_action( 'wp_ajax_wgc_generate_meta', [ $this, 'ajax_generate_meta' ] );
+		add_action( 'wp_ajax_wgc_generate_tags', [ $this, 'ajax_generate_tags' ] );
 		add_action( 'wp_ajax_wgc_bulk_generate', [ $this, 'ajax_bulk_generate' ] );
 		add_action( 'wp_ajax_wgc_bulk_status', [ $this, 'ajax_bulk_status' ] );
 		
@@ -61,34 +65,55 @@ class WPGeminiContentGenerator {
 	}
 
 	public function register_settings() {
+		// Ensure sensitive option does not autoload
+		$this->ensure_api_key_autoload_no();
 		register_setting( 'wgc_settings_group', WGC_OPTION_API_KEY, [
 			'type'              => 'string',
 			'sanitize_callback' => [ $this, 'sanitize_api_key' ],
 			'default'           => '',
+			'capability'        => 'manage_options',
+		] );
+		// Meta description toggle
+		register_setting( 'wgc_settings_group', WGC_OPTION_ENABLE_META, [
+			'type'              => 'boolean',
+			'sanitize_callback' => [ $this, 'sanitize_emoji_icons' ],
+			'default'           => false,
+			'capability'        => 'manage_options',
+		] );
+		// Tags generation toggle
+		register_setting( 'wgc_settings_group', WGC_OPTION_ENABLE_TAGS, [
+			'type'              => 'boolean',
+			'sanitize_callback' => [ $this, 'sanitize_emoji_icons' ],
+			'default'           => false,
+			'capability'        => 'manage_options',
 		] );
 
 		register_setting( 'wgc_settings_group', WGC_OPTION_LANGUAGE, [
 			'type'              => 'string',
 			'sanitize_callback' => [ $this, 'sanitize_language' ],
 			'default'           => 'en',
+			'capability'        => 'manage_options',
 		] );
 
 		register_setting( 'wgc_settings_group', WGC_OPTION_POST_TYPES, [
 			'type'              => 'array',
 			'sanitize_callback' => [ $this, 'sanitize_post_types' ],
 			'default'           => [ 'post', 'page' ],
+			'capability'        => 'manage_options',
 		] );
 
 		register_setting( 'wgc_settings_group', WGC_OPTION_APPEND_MODE, [
 			'type'              => 'string',
 			'sanitize_callback' => [ $this, 'sanitize_append_mode' ],
 			'default'           => 'replace',
+			'capability'        => 'manage_options',
 		] );
 
 		register_setting( 'wgc_settings_group', WGC_OPTION_EMOJI_ICONS, [
 			'type'              => 'boolean',
 			'sanitize_callback' => [ $this, 'sanitize_emoji_icons' ],
 			'default'           => false,
+			'capability'        => 'manage_options',
 		] );
 
 		add_settings_section(
@@ -136,6 +161,22 @@ class WPGeminiContentGenerator {
 			'wgc_emoji_icons',
 			__( 'Emoji & Icons', 'wp-content-studio-ai' ),
 			[ $this, 'render_emoji_icons_field' ],
+			'wgc-settings',
+			'wgc_api_section'
+		);
+
+		add_settings_field(
+			'wgc_enable_meta',
+			__( 'Meta Description', 'wp-content-studio-ai' ),
+			[ $this, 'render_enable_meta_field' ],
+			'wgc-settings',
+			'wgc_api_section'
+		);
+
+		add_settings_field(
+			'wgc_enable_tags',
+			__( 'Tags Generation', 'wp-content-studio-ai' ),
+			[ $this, 'render_enable_tags_field' ],
 			'wgc-settings',
 			'wgc_api_section'
 		);
@@ -255,6 +296,24 @@ class WPGeminiContentGenerator {
 		echo '<p class="description">' . esc_html__( 'Add emoji and icons to make the content more engaging and visually appealing.', 'wp-content-studio-ai' ) . '</p>';
 	}
 
+	public function render_enable_meta_field() {
+		$enabled = (bool) get_option( WGC_OPTION_ENABLE_META, false );
+		echo '<label style="display:block;margin:5px 0;">';
+		echo '<input type="checkbox" name="' . esc_attr( WGC_OPTION_ENABLE_META ) . '" value="1" ' . checked( $enabled, true, false ) . ' /> ';
+		echo esc_html__( 'Enable meta description generation', 'wp-content-studio-ai' );
+		echo '</label>';
+		echo '<p class="description">' . esc_html__( 'Adds a button in the post editor to generate a 155–160 characters meta description.', 'wp-content-studio-ai' ) . '</p>';
+	}
+
+	public function render_enable_tags_field() {
+		$enabled = (bool) get_option( WGC_OPTION_ENABLE_TAGS, false );
+		echo '<label style="display:block;margin:5px 0;">';
+		echo '<input type="checkbox" name="' . esc_attr( WGC_OPTION_ENABLE_TAGS ) . '" value="1" ' . checked( $enabled, true, false ) . ' /> ';
+		echo esc_html__( 'Enable tags generation', 'wp-content-studio-ai' );
+		echo '</label>';
+		echo '<p class="description">' . esc_html__( 'Adds a button in the post editor to generate and assign suggested tags.', 'wp-content-studio-ai' ) . '</p>';
+	}
+
 	public function render_settings_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
@@ -270,6 +329,15 @@ class WPGeminiContentGenerator {
 		do_settings_sections( 'wgc-settings' );
 		submit_button( __( 'Save Settings', 'wp-content-studio-ai' ) );
 		echo '</form>';
+
+		// Security & Privacy section
+		echo '<hr />';
+		echo '<h2>' . esc_html__( 'Security & Privacy', 'wp-content-studio-ai' ) . '</h2>';
+		echo '<ul style="list-style: disc; margin-left: 20px;">';
+		echo '<li>' . esc_html__( 'API keys are stored only in WordPress options.', 'wp-content-studio-ai' ) . '</li>';
+		echo '<li>' . esc_html__( 'Requests use HTTPS and are sent only when you trigger generation.', 'wp-content-studio-ai' ) . '</li>';
+		echo '<li>' . esc_html__( 'Admin-only capabilities and nonces protect all AJAX operations.', 'wp-content-studio-ai' ) . '</li>';
+		echo '</ul>';
 
 		echo '<hr />';
 		echo '<h2>' . esc_html__( 'Bulk Update Posts/Pages', 'wp-content-studio-ai' ) . '</h2>';
@@ -322,6 +390,13 @@ class WPGeminiContentGenerator {
 			$button_text = __( 'Generate Long Description', 'wp-content-studio-ai' );
 		}
 		echo '<p><button type="button" class="button button-primary wgc-generate" data-post-id="' . esc_attr( (string) $post->ID ) . '" data-nonce="' . esc_attr( $nonce ) . '">' . esc_html( $button_text ) . '</button></p>';
+		// Feature buttons: Meta & Tags
+		if ( get_option( WGC_OPTION_ENABLE_META, false ) ) {
+			echo '<p><button type="button" class="button wgc-generate-meta" data-post-id="' . esc_attr( (string) $post->ID ) . '" data-nonce="' . esc_attr( $nonce ) . '">' . esc_html__( 'Generate Meta Description', 'wp-content-studio-ai' ) . '</button></p>';
+		}
+		if ( get_option( WGC_OPTION_ENABLE_TAGS, false ) ) {
+			echo '<p><button type="button" class="button wgc-generate-tags" data-post-id="' . esc_attr( (string) $post->ID ) . '" data-nonce="' . esc_attr( $nonce ) . '">' . esc_html__( 'Generate Tags', 'wp-content-studio-ai' ) . '</button></p>';
+		}
 		
 		if ( $generated_time ) {
 			echo '<div class="wgc-generated-info" style="background: #f0f8ff; border: 1px solid #0073aa; padding: 10px; margin: 10px 0; border-radius: 3px;">';
@@ -332,6 +407,15 @@ class WPGeminiContentGenerator {
 		echo '<div id="wgc-preview" style="display: none; background: #f9f9f9; border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 3px; max-height: 300px; overflow-y: auto;">';
 		echo '<h4>' . esc_html__( 'Generated Description Preview:', 'wp-content-studio-ai' ) . '</h4>';
 		echo '<div id="wgc-preview-content" style="font-size: 13px; line-height: 1.4;"></div>';
+		echo '</div>';
+		
+		echo '<div id="wgc-meta-preview" style="display:none; background:#f9f9f9; border:1px solid #ddd; padding:10px; margin:10px 0; border-radius:3px;">';
+		echo '<h4>' . esc_html__( 'Generated Meta Description:', 'wp-content-studio-ai' ) . '</h4>';
+		echo '<div id="wgc-meta-preview-content" style="font-size:13px; line-height:1.4;"></div>';
+		echo '</div>';
+		echo '<div id="wgc-tags-preview" style="display:none; background:#f9f9f9; border:1px solid #ddd; padding:10px; margin:10px 0; border-radius:3px;">';
+		echo '<h4>' . esc_html__( 'Generated Tags:', 'wp-content-studio-ai' ) . '</h4>';
+		echo '<div id="wgc-tags-preview-content" style="font-size:13px; line-height:1.4;"></div>';
 		echo '</div>';
 		
 		$append_mode = get_option( WGC_OPTION_APPEND_MODE, 'replace' );
@@ -644,6 +728,63 @@ Topic: ';
 		] );
 	}
 
+	public function ajax_generate_meta() {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'wp-content-studio-ai' ) ], 403 );
+		}
+		check_ajax_referer( 'wgc_single_nonce', 'nonce' );
+
+		$post_id = isset( $_POST['postId'] ) ? (int) $_POST['postId'] : 0;
+		$title   = get_the_title( $post_id );
+		if ( empty( $post_id ) || empty( $title ) ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid post.', 'wp-content-studio-ai' ) ], 400 );
+		}
+		$language = get_option( WGC_OPTION_LANGUAGE, 'en' );
+		$language_names = [ 'en'=>'English','it'=>'Italian','es'=>'Spanish','fr'=>'French','de'=>'German','pt'=>'Portuguese','ru'=>'Russian','ja'=>'Japanese','ko'=>'Korean','zh'=>'Chinese','ar'=>'Arabic','hi'=>'Hindi' ];
+		$language_name = $language_names[ $language ] ?? 'English';
+		$prompt = 'You are an expert SEO copywriter. Write a concise meta description (max 160 characters) in ' . $language_name . ' for the following page title. It must be a single sentence, no quotes, no markdown, compelling and keyword-rich. Title: "' . $title . '"';
+		$json   = $this->call_gemini_generate( $prompt );
+		if ( is_wp_error( $json ) ) {
+			wp_send_json_error( [ 'message' => $json->get_error_message() ], 500 );
+		}
+		$text = $this->extract_text_from_gemini_response( $json );
+		$text = wp_strip_all_tags( $text );
+		$text = trim( preg_replace( '/\s+/', ' ', $text ) );
+		if ( strlen( $text ) > 160 ) { $text = mb_substr( $text, 0, 160 ); }
+		update_post_meta( $post_id, '_wgc_meta_description', $text );
+		if ( defined( 'WPSEO_VERSION' ) ) { update_post_meta( $post_id, '_yoast_wpseo_metadesc', $text ); }
+		wp_send_json_success( [ 'message' => __( 'Meta description generated.', 'wp-content-studio-ai' ), 'meta_description' => $text ] );
+	}
+
+	public function ajax_generate_tags() {
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'wp-content-studio-ai' ) ], 403 );
+		}
+		check_ajax_referer( 'wgc_single_nonce', 'nonce' );
+
+		$post_id = isset( $_POST['postId'] ) ? (int) $_POST['postId'] : 0;
+		$title   = get_the_title( $post_id );
+		if ( empty( $post_id ) || empty( $title ) ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid post.', 'wp-content-studio-ai' ) ], 400 );
+		}
+		$language = get_option( WGC_OPTION_LANGUAGE, 'en' );
+		$language_names = [ 'en'=>'English','it'=>'Italian','es'=>'Spanish','fr'=>'French','de'=>'German','pt'=>'Portuguese','ru'=>'Russian','ja'=>'Japanese','ko'=>'Korean','zh'=>'Chinese','ar'=>'Arabic','hi'=>'Hindi' ];
+		$language_name = $language_names[ $language ] ?? 'English';
+		$prompt = 'Suggest 5 SEO-friendly tags in ' . $language_name . ' for this title. Return only comma-separated keywords, no extra text. Title: "' . $title . '"';
+		$json   = $this->call_gemini_generate( $prompt );
+		if ( is_wp_error( $json ) ) {
+			wp_send_json_error( [ 'message' => $json->get_error_message() ], 500 );
+		}
+		$text = $this->extract_text_from_gemini_response( $json );
+		$raw = strtolower( wp_strip_all_tags( $text ) );
+		$parts = array_filter( array_map( 'trim', preg_split( '/[,\n]+/', $raw ) ) );
+		$tags = [];
+		foreach ( $parts as $p ) { $tags[] = sanitize_text_field( $p ); }
+		if ( empty( $tags ) ) { wp_send_json_error( [ 'message' => __( 'No tags generated.', 'wp-content-studio-ai' ) ], 422 ); }
+		wp_set_post_tags( $post_id, $tags, true );
+		wp_send_json_success( [ 'message' => __( 'Tags generated and assigned.', 'wp-content-studio-ai' ), 'tags' => $tags ] );
+	}
+
 	public function ajax_bulk_generate() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( [ 'message' => __( 'Permission denied.', 'wp-content-studio-ai' ) ], 403 );
@@ -767,6 +908,19 @@ Topic: ';
 		}
 	}
 
+	private function ensure_api_key_autoload_no() {
+		global $wpdb;
+		$value = get_option( WGC_OPTION_API_KEY, null );
+		if ( $value === null ) {
+			return;
+		}
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT autoload FROM {$wpdb->options} WHERE option_name = %s", WGC_OPTION_API_KEY ) );
+		if ( $row && isset( $row->autoload ) && $row->autoload !== 'no' ) {
+			delete_option( WGC_OPTION_API_KEY );
+			add_option( WGC_OPTION_API_KEY, $value, '', 'no' );
+		}
+	}
+
 	public function process_bulk_job( $job_id ) {
 		$job_data = get_option( 'wgc_bulk_job_' . $job_id, null );
 		if ( ! $job_data || $job_data['status'] !== 'running' ) {
@@ -863,6 +1017,15 @@ function wgc_on_deactivate() {
 		$table = $wpdb->options;
 		$wpdb->query( "DELETE FROM {$table} WHERE option_name LIKE 'wgc_bulk_job_%'" );
 	}
+}
+
+
+
+
+register_activation_hook( __FILE__, 'wgc_on_activate' );
+function wgc_on_activate() {
+	// Ensure API key option exists and is not autoloaded
+	add_option( WGC_OPTION_API_KEY, '', '', 'no' );
 }
 
 
