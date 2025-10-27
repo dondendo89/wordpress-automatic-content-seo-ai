@@ -331,8 +331,18 @@
             var batchSize = parseInt($('#wgc-batch-size').val(), 10) || 5;
             var postTypes = $('#wgc-bulk-post-types').val() || [];
             var forceRegenerate = $('#wgc-force-regenerate').is(':checked');
-            var includeMeta = $('#wgc-include-meta').is(':checked');
+            var generateContent = $('#wgc-bulk-content').is(':checked');
+            var generateMeta = $('#wgc-bulk-meta').is(':checked');
+            var generateTags = $('#wgc-bulk-tags').is(':checked');
+            var generateExcerpt = $('#wgc-bulk-excerpt').is(':checked');
             var $status = $('#wgc-bulk-status');
+            
+            // Debug: Log the values being sent
+            console.log('WGC Bulk Debug - Sending values:');
+            console.log('generateContent:', generateContent);
+            console.log('generateMeta:', generateMeta);
+            console.log('generateTags:', generateTags);
+            console.log('generateExcerpt:', generateExcerpt);
             
             // Validate inputs
             if (postTypes.length === 0) {
@@ -358,7 +368,10 @@
                 batchSize: batchSize,
                 postTypes: postTypes,
                 forceRegenerate: forceRegenerate,
-                includeMeta: includeMeta
+                generateContent: generateContent,
+                generateMeta: generateMeta,
+                generateTags: generateTags,
+                generateExcerpt: generateExcerpt
             })
             .done(function(response) {
                 if (response.success) {
@@ -448,6 +461,9 @@
                                 'Errors: ' + (data.errors ? data.errors.length : 0) +
                                 '</div>'
                             );
+                        } else if (data.status === 'pending') {
+                            // If job is still pending, try to force process it
+                            WGCAdmin.forceProcessJob(jobId, $btn, $status);
                         } else if (data.status === 'failed') {
                             clearInterval(WGCAdmin.bulkJobInterval);
                             WGCAdmin.bulkJobInterval = null;
@@ -501,6 +517,47 @@
                     );
                 });
             }, 3000); // Check every 3 seconds
+        },
+
+        forceProcessJob: function(jobId, $btn, $status) {
+            $.post(WGC.ajax_url, {
+                action: 'wgc_bulk_force_process',
+                jobId: jobId,
+                nonce: $('#wgc-bulk-generate').data('nonce')
+            })
+            .done(function(response) {
+                if (response.success) {
+                    var data = response.data;
+                    if (data.status === 'running' || data.status === 'completed') {
+                        // Job is now processing or completed, continue monitoring
+                        WGCAdmin.monitorBulkJob(jobId, $btn, $status);
+                    } else {
+                        // Still pending, show warning
+                        $status.html(
+                            '<div class="wgc-notice warning">' +
+                            '<strong>⚠️ Job Stuck!</strong><br>' +
+                            'The job appears to be stuck in pending status. This might be due to WordPress cron issues.<br>' +
+                            '<button type="button" class="button button-secondary" onclick="WGCAdmin.forceProcessJob(\'' + jobId + '\', $(\'#wgc-bulk-generate\'), $(\'#wgc-bulk-status\'))">Try Again</button>' +
+                            '</div>'
+                        );
+                    }
+                } else {
+                    $status.html(
+                        '<div class="wgc-notice error">' +
+                        '<strong>❌ Force Process Failed!</strong><br>' +
+                        'Error: ' + (response.data.message || 'Unknown error') +
+                        '</div>'
+                    );
+                }
+            })
+            .fail(function() {
+                $status.html(
+                    '<div class="wgc-notice error">' +
+                    '<strong>❌ Network Error!</strong><br>' +
+                    'Failed to force process job. Please try again.' +
+                    '</div>'
+                );
+            });
         },
 
         showNotice: function(type, message) {

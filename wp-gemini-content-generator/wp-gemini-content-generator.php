@@ -51,6 +51,7 @@ class WPGeminiContentGenerator {
 		add_action( 'wp_ajax_wgc_generate_for_post', [ $this, 'ajax_generate_for_post' ] );
 		add_action( 'wp_ajax_wgc_bulk_generate', [ $this, 'ajax_bulk_generate' ] );
 		add_action( 'wp_ajax_wgc_bulk_status', [ $this, 'ajax_bulk_status' ] );
+		add_action( 'wp_ajax_wgc_bulk_force_process', [ $this, 'ajax_bulk_force_process' ] );
 		add_action( 'wp_ajax_wgc_generate_meta_description', [ $this, 'ajax_generate_meta_description' ] );
 		add_action( 'wp_ajax_wgc_generate_tags', [ $this, 'ajax_generate_tags' ] );
 		add_action( 'wp_ajax_wgc_generate_excerpt', [ $this, 'ajax_generate_excerpt' ] );
@@ -304,10 +305,26 @@ class WPGeminiContentGenerator {
 				</div>
 
 				<div class="wgc-form-group">
-					<label>
-						<input type="checkbox" id="wgc-include-meta" name="wgc-include-meta">
-						<?php _e( 'Include meta descriptions and tags', 'wp-gemini-content-generator' ); ?>
-					</label>
+					<h4><?php _e( 'Generation Options:', 'wp-gemini-content-generator' ); ?></h4>
+					<div class="wgc-checkbox-group">
+						<label>
+							<input type="checkbox" id="wgc-bulk-content" name="wgc-bulk-content" checked>
+							<?php _e( 'Generate Content', 'wp-gemini-content-generator' ); ?>
+						</label>
+						<label>
+							<input type="checkbox" id="wgc-bulk-meta" name="wgc-bulk-meta">
+							<?php _e( 'Generate Meta Descriptions', 'wp-gemini-content-generator' ); ?>
+						</label>
+						<label>
+							<input type="checkbox" id="wgc-bulk-tags" name="wgc-bulk-tags">
+							<?php _e( 'Generate Tags', 'wp-gemini-content-generator' ); ?>
+						</label>
+						<label>
+							<input type="checkbox" id="wgc-bulk-excerpt" name="wgc-bulk-excerpt">
+							<?php _e( 'Generate Excerpts', 'wp-gemini-content-generator' ); ?>
+						</label>
+					</div>
+					<p class="description"><?php _e( 'Select which content types to generate for each post.', 'wp-gemini-content-generator' ); ?></p>
 				</div>
 
 				<button type="button" id="wgc-bulk-generate" class="button button-primary button-large" data-nonce="<?php echo esc_attr( $nonce ); ?>">
@@ -1299,7 +1316,18 @@ class WPGeminiContentGenerator {
 		$batch_size = intval( $_POST['batchSize'] ?? 5 );
 		$post_types = array_map( 'sanitize_text_field', $_POST['postTypes'] ?? [] );
 		$force_regenerate = (bool) ( $_POST['forceRegenerate'] ?? false );
-		$include_meta = (bool) ( $_POST['includeMeta'] ?? false );
+		$generate_content = (bool) ( $_POST['generateContent'] ?? true );
+		$generate_meta = (bool) ( $_POST['generateMeta'] ?? false );
+		$generate_tags = (bool) ( $_POST['generateTags'] ?? false );
+		$generate_excerpt = (bool) ( $_POST['generateExcerpt'] ?? false );
+
+		// Debug: Log the received values
+		error_log( 'WGC Bulk Debug - Received values:' );
+		error_log( 'generateContent: ' . ($generate_content ? 'true' : 'false') );
+		error_log( 'generateMeta: ' . ($generate_meta ? 'true' : 'false') );
+		error_log( 'generateTags: ' . ($generate_tags ? 'true' : 'false') );
+		error_log( 'generateExcerpt: ' . ($generate_excerpt ? 'true' : 'false') );
+		error_log( 'POST data: ' . print_r( $_POST, true ) );
 
 		if ( empty( $post_types ) ) {
 			wp_send_json_error( [ 'message' => __( 'No post types selected', 'wp-gemini-content-generator' ) ] );
@@ -1343,7 +1371,11 @@ class WPGeminiContentGenerator {
 			'job_id' => $job_id,
 			'post_ids' => array_map( function( $post ) { return $post->ID; }, $posts ),
 			'batch_size' => $batch_size,
-			'include_meta' => $include_meta,
+			'force_regenerate' => $force_regenerate,
+			'generate_content' => $generate_content,
+			'generate_meta' => $generate_meta,
+			'generate_tags' => $generate_tags,
+			'generate_excerpt' => $generate_excerpt,
 			'status' => 'pending',
 			'processed' => 0,
 			'errors' => [],
@@ -1351,7 +1383,16 @@ class WPGeminiContentGenerator {
 		];
 
 		update_option( 'wgc_bulk_job_' . $job_id, $job_data );
+		
+		// Try to start processing immediately
 		$this->schedule_bulk_job();
+		
+		// If still pending after scheduling, try to process the first batch immediately
+		$job_data_check = get_option( 'wgc_bulk_job_' . $job_id );
+		if ( $job_data_check && $job_data_check['status'] === 'pending' ) {
+			// Force immediate processing of first batch
+			$this->process_single_bulk_job( $job_id, $job_data_check );
+		}
 
 		wp_send_json_success( [
 			'job_started' => true,
@@ -1381,10 +1422,39 @@ class WPGeminiContentGenerator {
 		wp_send_json_success( $job_data );
 	}
 
+	public function ajax_bulk_force_process() {
+		check_ajax_referer( 'wgc_bulk_generate', 'nonce' );
+		
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( __( 'Insufficient permissions', 'wp-gemini-content-generator' ) );
+		}
+
+		$job_id = sanitize_text_field( $_POST['jobId'] ?? '' );
+		if ( empty( $job_id ) ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid job ID', 'wp-gemini-content-generator' ) ] );
+		}
+
+		$job_data = get_option( 'wgc_bulk_job_' . $job_id );
+		if ( ! $job_data ) {
+			wp_send_json_error( [ 'message' => __( 'Job not found', 'wp-gemini-content-generator' ) ] );
+		}
+
+		if ( $job_data['status'] === 'pending' ) {
+			$this->process_single_bulk_job( $job_id, $job_data );
+			$job_data = get_option( 'wgc_bulk_job_' . $job_id );
+		}
+
+		wp_send_json_success( $job_data );
+	}
+
 	public function schedule_bulk_job() {
+		// Try to schedule the job
 		if ( ! wp_next_scheduled( 'wgc_bulk_process_job' ) ) {
 			wp_schedule_single_event( time() + 10, 'wgc_bulk_process_job' );
 		}
+		
+		// Also try to process immediately if possible
+		$this->process_bulk_job();
 	}
 
 	public function process_bulk_job() {
@@ -1408,6 +1478,13 @@ class WPGeminiContentGenerator {
 		$job_data['status'] = 'running';
 		update_option( 'wgc_bulk_job_' . $job_id, $job_data );
 
+		// Debug: Log the job data being processed
+		error_log( 'WGC Bulk Process Debug - Job data:' );
+		error_log( 'generate_content: ' . ($job_data['generate_content'] ? 'true' : 'false') );
+		error_log( 'generate_meta: ' . ($job_data['generate_meta'] ? 'true' : 'false') );
+		error_log( 'generate_tags: ' . ($job_data['generate_tags'] ? 'true' : 'false') );
+		error_log( 'generate_excerpt: ' . ($job_data['generate_excerpt'] ? 'true' : 'false') );
+
 		$post_ids = array_slice( $job_data['post_ids'], $job_data['processed'], $job_data['batch_size'] );
 		
 		foreach ( $post_ids as $post_id ) {
@@ -1415,21 +1492,23 @@ class WPGeminiContentGenerator {
 				$post = get_post( $post_id );
 				if ( ! $post ) continue;
 
-				// Generate main content
-				$prompt = $this->build_prompt_for_title( $post->post_title, $post_id );
-				$result = $this->call_gemini_generate( $prompt );
+				// Generate main content if enabled
+				if ( $job_data['generate_content'] ) {
+					$prompt = $this->build_prompt_for_title( $post->post_title, $post_id );
+					$result = $this->call_gemini_generate( $prompt );
 
-				if ( ! is_wp_error( $result ) ) {
-					$generated_text = $this->extract_text_from_gemini_response( $result );
-					if ( ! empty( $generated_text ) ) {
-						$append_mode = get_option( WGC_OPTION_APPEND_MODE, 'append' );
-						$this->append_content_to_post( $post_id, $generated_text, $append_mode );
-						update_post_meta( $post_id, '_wgc_generated', current_time( 'mysql' ) );
+					if ( ! is_wp_error( $result ) ) {
+						$generated_text = $this->extract_text_from_gemini_response( $result );
+						if ( ! empty( $generated_text ) ) {
+							$append_mode = get_option( WGC_OPTION_APPEND_MODE, 'append' );
+							$this->append_content_to_post( $post_id, $generated_text, $append_mode );
+							update_post_meta( $post_id, '_wgc_generated', current_time( 'mysql' ) );
+						}
 					}
 				}
 
 				// Generate meta description if enabled
-				if ( $job_data['include_meta'] && get_option( WGC_OPTION_META_DESCRIPTION, true ) ) {
+				if ( $job_data['generate_meta'] ) {
 					$meta_prompt = $this->build_meta_description_prompt( $post->post_title, $post->post_content );
 					$meta_result = $this->call_gemini_generate( $meta_prompt );
 					
@@ -1444,7 +1523,7 @@ class WPGeminiContentGenerator {
 				}
 
 				// Generate tags if enabled
-				if ( $job_data['include_meta'] && get_option( WGC_OPTION_GENERATE_TAGS, true ) ) {
+				if ( $job_data['generate_tags'] ) {
 					$tags_prompt = $this->build_tags_prompt( $post->post_title, $post->post_content );
 					$tags_result = $this->call_gemini_generate( $tags_prompt );
 					
@@ -1462,6 +1541,23 @@ class WPGeminiContentGenerator {
 							// For regular posts, use post_tag taxonomy
 							wp_set_post_tags( $post_id, $tags );
 						}
+					}
+				}
+
+				// Generate excerpt if enabled
+				if ( $job_data['generate_excerpt'] ) {
+					$excerpt_prompt = $this->build_excerpt_prompt( $post->post_title, $post->post_content );
+					$excerpt_result = $this->call_gemini_generate( $excerpt_prompt );
+					
+					if ( ! is_wp_error( $excerpt_result ) ) {
+						$excerpt_text = $this->extract_text_from_gemini_response( $excerpt_result );
+						$excerpt_length = get_option( WGC_OPTION_EXCERPT_LENGTH, 55 );
+						$excerpt = wp_trim_words( $excerpt_text, $excerpt_length, '...' );
+						
+						wp_update_post( [
+							'ID' => $post_id,
+							'post_excerpt' => $excerpt
+						] );
 					}
 				}
 

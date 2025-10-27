@@ -1,0 +1,222 @@
+/**
+ * Admin styles for WP Gemini Content Generator
+ *
+ * @package WP_Gemini_Content_Generator
+ * @since 2.0.0
+ */
+
+/* Meta box styling */
+#wgc-content-generator {
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.wgc-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wgc-buttons .button {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+#wgc-generate-all {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+#wgc-generate-all:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    color: white !important;
+}
+
+#wgc-generate-all:disabled {
+    background: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed;
+}
+
+#wgc-status {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+#wgc-status.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+#wgc-status.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+#wgc-status.loading {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Bulk generation styling */
+.wgc-bulk-generator {
+    max-width: 800px;
+}
+
+.wgc-bulk-generator .form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+    vertical-align: top;
+}
+
+.wgc-bulk-generator .form-table td {
+    padding: 15px 10px;
+}
+
+.wgc-input {
+    width: 100px;
+}
+
+#wgc-bulk-status {
+    padding: 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#wgc-bulk-status.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+#wgc-bulk-status.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+#wgc-bulk-status.loading {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+#wgc-bulk-progress {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+.progress-text {
+    text-align: center;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+/* Settings page styling */
+.wrap h1 {
+    margin-bottom: 20px;
+}
+
+.form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+    vertical-align: top;
+}
+
+.form-table td {
+    padding: 15px 10px;
+}
+
+.form-table input[type="text"],
+.form-table input[type="password"],
+.form-table input[type="number"],
+.form-table select {
+    width: 100%;
+    max-width: 400px;
+}
+
+.small-text {
+    width: 80px !important;
+}
+
+.regular-text {
+    width: 300px !important;
+}
+
+/* Responsive design */
+@media (max-width: 782px) {
+    .wgc-buttons {
+        gap: 6px;
+    }
+    
+    .wgc-buttons .button {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    .form-table th,
+    .form-table td {
+        padding: 10px 5px;
+    }
+    
+    .form-table input[type="text"],
+    .form-table input[type="password"],
+    .form-table input[type="number"],
+    .form-table select {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+/* Loading animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading::after {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+    vertical-align: middle;
+}
