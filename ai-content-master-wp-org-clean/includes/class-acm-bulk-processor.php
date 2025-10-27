@@ -1,9 +1,9 @@
 <?php
 /**
- * Bulk processor functionality
+ * Bulk processor with freemium functionality
  *
- * @package WP_Gemini_Content_Generator
- * @since 2.0.0
+ * @package AI_Content_Master
+ * @since 1.0.0
  */
 
 // Prevent direct access
@@ -12,17 +12,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Handle bulk content generation
+ * Handle bulk content generation with freemium features
  */
-class WGC_Bulk_Processor {
+class ACM_Bulk_Processor {
     
     /**
      * Constructor
      */
     public function __construct() {
         add_action( 'admin_menu', array( $this, 'add_bulk_menu' ) );
-        add_action( 'wp_ajax_wgc_bulk_generate', array( $this, 'ajax_bulk_generate' ) );
-        add_action( 'wp_ajax_wgc_bulk_status', array( $this, 'ajax_bulk_status' ) );
+        add_action( 'wp_ajax_acm_bulk_generate', array( $this, 'ajax_bulk_generate' ) );
+        add_action( 'wp_ajax_acm_bulk_status', array( $this, 'ajax_bulk_status' ) );
         add_action( 'wgc_process_bulk_job', array( $this, 'process_bulk_job' ) );
     }
     
@@ -31,11 +31,11 @@ class WGC_Bulk_Processor {
      */
     public function add_bulk_menu() {
         add_submenu_page(
-            'wp-gemini-content-generator',
-            __( 'Bulk Generation', 'wp-gemini-content-generator' ),
-            __( 'Bulk Generation', 'wp-gemini-content-generator' ),
+            'ai-content-master',
+            __( 'Bulk Generation', 'ai-content-master' ),
+            __( 'Bulk Generation', 'ai-content-master' ),
             'manage_options',
-            'wgc-bulk-generation',
+            'acm-bulk-generation',
             array( $this, 'bulk_page' )
         );
     }
@@ -44,21 +44,41 @@ class WGC_Bulk_Processor {
      * Bulk generation page
      */
     public function bulk_page() {
+        $credits_info = ( new ACM_Credits() )->get_credits_info();
         ?>
         <div class="wrap">
-            <h1><?php _e( 'Bulk Content Generation', 'wp-gemini-content-generator' ); ?></h1>
+            <h1><?php _e( 'Bulk Content Generation', 'ai-content-master' ); ?></h1>
             
-            <div class="wgc-bulk-generator">
-                <form id="wgc-bulk-form">
+            <!-- Credits Info -->
+            <div class="acm-bulk-credits-info">
+                <div class="acm-credits-summary">
+                    <div class="acm-credit-item">
+                        <span class="acm-credit-label"><?php _e( 'Free Generations:', 'ai-content-master' ); ?></span>
+                        <span class="acm-credit-value"><?php echo esc_html( $credits_info['free_generations_remaining'] ); ?> / <?php echo esc_html( ACM_FREE_GENERATIONS ); ?></span>
+                    </div>
+                    <div class="acm-credit-item">
+                        <span class="acm-credit-label"><?php _e( 'Credits Balance:', 'ai-content-master' ); ?></span>
+                        <span class="acm-credit-value"><?php echo esc_html( $credits_info['credits_remaining'] ); ?> <?php _e( 'generations', 'ai-content-master' ); ?></span>
+                    </div>
+                </div>
+                <div class="acm-credits-actions">
+                    <a href="<?php echo admin_url( 'admin.php?page=acm-credits' ); ?>" class="button button-primary">
+                        <?php _e( 'Buy More Credits', 'ai-content-master' ); ?>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="acm-bulk-generator">
+                <form id="acm-bulk-form">
                     <table class="form-table">
                         <tr>
                             <th scope="row">
-                                <label for="wgc-post-types"><?php _e( 'Post Types', 'wp-gemini-content-generator' ); ?></label>
+                                <label for="acm-post-types"><?php _e( 'Post Types', 'ai-content-master' ); ?></label>
                             </th>
                             <td>
                                 <?php
                                 $post_types = get_post_types( array( 'public' => true ), 'objects' );
-                                $selected_types = WGC_Core::get_option( 'wgc_post_types', array( 'post' ) );
+                                $selected_types = ACM_Core::get_option( 'acm_post_types', array( 'post' ) );
                                 
                                 foreach ( $post_types as $type ) {
                                     $checked = in_array( $type->name, $selected_types ) ? 'checked' : '';
@@ -75,45 +95,45 @@ class WGC_Bulk_Processor {
                         
                         <tr>
                             <th scope="row">
-                                <?php _e( 'Generation Options', 'wp-gemini-content-generator' ); ?>
+                                <?php _e( 'Generation Options', 'ai-content-master' ); ?>
                             </th>
                             <td>
-                                <label><input type="checkbox" name="generateContent" value="1" checked> <?php _e( 'Generate Content', 'wp-gemini-content-generator' ); ?></label><br>
-                                <label><input type="checkbox" name="generateMeta" value="1" checked> <?php _e( 'Generate Meta Descriptions', 'wp-gemini-content-generator' ); ?></label><br>
-                                <label><input type="checkbox" name="generateTags" value="1" checked> <?php _e( 'Generate Tags', 'wp-gemini-content-generator' ); ?></label><br>
-                                <label><input type="checkbox" name="generateExcerpt" value="1" checked> <?php _e( 'Generate Excerpts', 'wp-gemini-content-generator' ); ?></label>
+                                <label><input type="checkbox" name="generateContent" value="1" checked> <?php _e( 'Generate Content', 'ai-content-master' ); ?></label><br>
+                                <label><input type="checkbox" name="generateMeta" value="1" checked> <?php _e( 'Generate Meta Descriptions', 'ai-content-master' ); ?></label><br>
+                                <label><input type="checkbox" name="generateTags" value="1" checked> <?php _e( 'Generate Tags', 'ai-content-master' ); ?></label><br>
+                                <label><input type="checkbox" name="generateExcerpt" value="1" checked> <?php _e( 'Generate Excerpts', 'ai-content-master' ); ?></label>
                             </td>
                         </tr>
                         
                         <tr>
                             <th scope="row">
-                                <label for="wgc-batch-size"><?php _e( 'Batch Size', 'wp-gemini-content-generator' ); ?></label>
+                                <label for="acm-batch-size"><?php _e( 'Batch Size', 'ai-content-master' ); ?></label>
                             </th>
                             <td>
                                 <input type="number" 
-                                       id="wgc-batch-size" 
+                                       id="acm-batch-size" 
                                        name="batchSize" 
-                                       value="<?php echo esc_attr( WGC_Core::get_option( 'wgc_batch_size', 5 ) ); ?>" 
+                                       value="<?php echo esc_attr( ACM_Core::get_option( 'acm_batch_size', 5 ) ); ?>" 
                                        min="1" 
                                        max="20" 
-                                       class="wgc-input">
+                                       class="acm-input">
                                 <p class="description">
-                                    <?php _e( 'Number of posts to process in each batch.', 'wp-gemini-content-generator' ); ?>
+                                    <?php _e( 'Number of posts to process in each batch.', 'ai-content-master' ); ?>
                                 </p>
                             </td>
                         </tr>
                         
                         <tr>
                             <th scope="row">
-                                <label for="wgc-force-regenerate"><?php _e( 'Force Regenerate', 'wp-gemini-content-generator' ); ?></label>
+                                <label for="acm-force-regenerate"><?php _e( 'Force Regenerate', 'ai-content-master' ); ?></label>
                             </th>
                             <td>
                                 <label>
                                     <input type="checkbox" 
-                                           id="wgc-force-regenerate" 
+                                           id="acm-force-regenerate" 
                                            name="forceRegenerate" 
                                            value="1">
-                                    <?php _e( 'Regenerate content even if it already exists', 'wp-gemini-content-generator' ); ?>
+                                    <?php _e( 'Regenerate content even if it already exists', 'ai-content-master' ); ?>
                                 </label>
                             </td>
                         </tr>
@@ -121,16 +141,16 @@ class WGC_Bulk_Processor {
                     
                     <p class="submit">
                         <button type="button" 
-                                id="wgc-bulk-generate" 
+                                id="acm-bulk-generate" 
                                 class="button button-primary button-large" 
-                                data-nonce="<?php echo esc_attr( wp_create_nonce( 'wgc_bulk_generate' ) ); ?>">
-                            <?php _e( 'Start Bulk Generation', 'wp-gemini-content-generator' ); ?>
+                                data-nonce="<?php echo esc_attr( wp_create_nonce( 'acm_bulk_generate' ) ); ?>">
+                            <?php _e( 'Start Bulk Generation', 'ai-content-master' ); ?>
                         </button>
                     </p>
                 </form>
                 
-                <div id="wgc-bulk-status" style="margin-top: 20px;"></div>
-                <div id="wgc-bulk-progress" style="margin-top: 20px;"></div>
+                <div id="acm-bulk-status" style="margin-top: 20px;"></div>
+                <div id="acm-bulk-progress" style="margin-top: 20px;"></div>
             </div>
         </div>
         <?php
@@ -140,12 +160,12 @@ class WGC_Bulk_Processor {
      * AJAX: Start bulk generation
      */
     public function ajax_bulk_generate() {
-        if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'wgc_bulk_generate' ) ) {
-            wp_die( __( 'Security check failed', 'wp-gemini-content-generator' ) );
+        if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'acm_bulk_generate' ) ) {
+            wp_die( __( 'Security check failed', 'ai-content-master' ) );
         }
         
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'Insufficient permissions', 'wp-gemini-content-generator' ) );
+            wp_die( __( 'Insufficient permissions', 'ai-content-master' ) );
         }
         
         $post_types = array_map( 'sanitize_text_field', $_POST['postTypes'] ?? [] );
@@ -157,7 +177,25 @@ class WGC_Bulk_Processor {
         $force_regenerate = ! empty( $_POST['forceRegenerate'] );
         
         if ( empty( $post_types ) ) {
-            wp_send_json_error( array( 'message' => __( 'Please select at least one post type', 'wp-gemini-content-generator' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Please select at least one post type', 'ai-content-master' ) ) );
+        }
+        
+        // Check if user has enough credits for bulk operation
+        $total_posts = $this->count_posts_to_process( $post_types, $force_regenerate );
+        $total_generations_needed = $total_posts * $this->count_generation_types( $generate_content, $generate_meta, $generate_tags, $generate_excerpt );
+        
+        $can_generate = ACM_Core::can_generate_content();
+        $available_generations = $can_generate['remaining'];
+        
+        if ( $total_generations_needed > $available_generations ) {
+            wp_send_json_error( array( 
+                'message' => sprintf( 
+                    __( 'Not enough credits. You need %d generations but only have %d available.', 'ai-content-master' ), 
+                    $total_generations_needed, 
+                    $available_generations 
+                ),
+                'redirect' => admin_url( 'admin.php?page=acm-credits' ),
+            ) );
         }
         
         // Get posts to process
@@ -172,11 +210,11 @@ class WGC_Bulk_Processor {
             $args['meta_query'] = array(
                 'relation' => 'OR',
                 array(
-                    'key' => '_wgc_generated',
+                    'key' => '_acm_generated',
                     'compare' => 'NOT EXISTS',
                 ),
                 array(
-                    'key' => '_wgc_generated',
+                    'key' => '_acm_generated',
                     'value' => '',
                     'compare' => '=',
                 ),
@@ -186,13 +224,14 @@ class WGC_Bulk_Processor {
         $posts = get_posts( $args );
         
         if ( empty( $posts ) ) {
-            wp_send_json_error( array( 'message' => __( 'No posts found to process', 'wp-gemini-content-generator' ) ) );
+            wp_send_json_error( array( 'message' => __( 'No posts found to process', 'ai-content-master' ) ) );
         }
         
         // Create job
-        $job_id = 'wgc_bulk_' . time();
+        $job_id = 'acm_bulk_' . time();
         $job_data = array(
             'job_id' => $job_id,
+            'user_id' => get_current_user_id(),
             'post_ids' => $posts,
             'status' => 'pending',
             'processed' => 0,
@@ -217,28 +256,71 @@ class WGC_Bulk_Processor {
         $this->process_bulk_job( $job_id );
         
         wp_send_json_success( array(
-            'message' => __( 'Bulk generation started', 'wp-gemini-content-generator' ),
+            'message' => __( 'Bulk generation started', 'ai-content-master' ),
             'job_id' => $job_id,
             'total_posts' => count( $posts ),
+            'total_generations' => $total_generations_needed,
         ) );
+    }
+    
+    /**
+     * Count posts to process
+     */
+    private function count_posts_to_process( $post_types, $force_regenerate ) {
+        $args = array(
+            'post_type' => $post_types,
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+        );
+        
+        if ( ! $force_regenerate ) {
+            $args['meta_query'] = array(
+                'relation' => 'OR',
+                array(
+                    'key' => '_acm_generated',
+                    'compare' => 'NOT EXISTS',
+                ),
+                array(
+                    'key' => '_acm_generated',
+                    'value' => '',
+                    'compare' => '=',
+                ),
+            );
+        }
+        
+        $posts = get_posts( $args );
+        return count( $posts );
+    }
+    
+    /**
+     * Count generation types selected
+     */
+    private function count_generation_types( $generate_content, $generate_meta, $generate_tags, $generate_excerpt ) {
+        $count = 0;
+        if ( $generate_content ) $count++;
+        if ( $generate_meta ) $count++;
+        if ( $generate_tags ) $count++;
+        if ( $generate_excerpt ) $count++;
+        return $count;
     }
     
     /**
      * AJAX: Get bulk status
      */
     public function ajax_bulk_status() {
-        if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'wgc_bulk_generate' ) ) {
-            wp_die( __( 'Security check failed', 'wp-gemini-content-generator' ) );
+        if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'acm_bulk_generate' ) ) {
+            wp_die( __( 'Security check failed', 'ai-content-master' ) );
         }
         
         $job_id = sanitize_text_field( $_POST['jobId'] ?? '' );
         if ( empty( $job_id ) ) {
-            wp_send_json_error( array( 'message' => __( 'Job ID required', 'wp-gemini-content-generator' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Job ID required', 'ai-content-master' ) ) );
         }
         
         $job_data = $this->get_job( $job_id );
         if ( ! $job_data ) {
-            wp_send_json_error( array( 'message' => __( 'Job not found', 'wp-gemini-content-generator' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Job not found', 'ai-content-master' ) ) );
         }
         
         wp_send_json_success( $job_data );
@@ -296,7 +378,7 @@ class WGC_Bulk_Processor {
             return;
         }
         
-        $api = new WGC_API();
+        $api = new ACM_API();
         
         try {
             // Generate content
@@ -311,6 +393,9 @@ class WGC_Bulk_Processor {
                         'post_content' => $sanitized_content,
                     ) );
                 }
+                
+                // Consume generation
+                ACM_Core::consume_generation();
             }
             
             // Generate meta description
@@ -322,6 +407,9 @@ class WGC_Bulk_Processor {
                     $sanitized_meta = sanitize_text_field( $meta );
                     update_post_meta( $post_id, '_yoast_wpseo_metadesc', $sanitized_meta );
                 }
+                
+                // Consume generation
+                ACM_Core::consume_generation();
             }
             
             // Generate tags
@@ -336,6 +424,9 @@ class WGC_Bulk_Processor {
                     $taxonomy = ( $post->post_type === 'product' ) ? 'product_tag' : 'post_tag';
                     wp_set_object_terms( $post_id, $tags, $taxonomy );
                 }
+                
+                // Consume generation
+                ACM_Core::consume_generation();
             }
             
             // Generate excerpt
@@ -350,13 +441,16 @@ class WGC_Bulk_Processor {
                         'post_excerpt' => $sanitized_excerpt,
                     ) );
                 }
+                
+                // Consume generation
+                ACM_Core::consume_generation();
             }
             
             // Mark as generated
-            update_post_meta( $post_id, '_wgc_generated', current_time( 'mysql' ) );
+            update_post_meta( $post_id, '_acm_generated', current_time( 'mysql' ) );
             
         } catch ( Exception $e ) {
-            WGC_Core::log_error( 'Bulk processing error for post ' . $post_id . ': ' . $e->getMessage() );
+            ACM_Core::log_error( 'Bulk processing error for post ' . $post_id . ': ' . $e->getMessage() );
         }
     }
     
@@ -366,12 +460,13 @@ class WGC_Bulk_Processor {
     private function save_job( $job_data ) {
         global $wpdb;
         
-        $table_name = $wpdb->prefix . 'wgc_bulk_jobs';
+        $table_name = $wpdb->prefix . 'acm_bulk_jobs';
         
         $wpdb->replace(
             $table_name,
             array(
                 'job_id' => $job_data['job_id'],
+                'user_id' => $job_data['user_id'],
                 'post_ids' => wp_json_encode( $job_data['post_ids'] ),
                 'status' => $job_data['status'],
                 'processed' => $job_data['processed'],
@@ -379,7 +474,7 @@ class WGC_Bulk_Processor {
                 'errors' => wp_json_encode( $job_data['errors'] ),
                 'options' => wp_json_encode( $job_data['options'] ),
             ),
-            array( '%s', '%s', '%s', '%d', '%d', '%s', '%s' )
+            array( '%s', '%d', '%s', '%s', '%d', '%d', '%s', '%s' )
         );
     }
     
@@ -389,7 +484,7 @@ class WGC_Bulk_Processor {
     private function get_job( $job_id ) {
         global $wpdb;
         
-        $table_name = $wpdb->prefix . 'wgc_bulk_jobs';
+        $table_name = $wpdb->prefix . 'acm_bulk_jobs';
         
         $result = $wpdb->get_row(
             $wpdb->prepare( "SELECT * FROM $table_name WHERE job_id = %s", $job_id ),
@@ -402,6 +497,7 @@ class WGC_Bulk_Processor {
         
         return array(
             'job_id' => $result['job_id'],
+            'user_id' => intval( $result['user_id'] ),
             'post_ids' => json_decode( $result['post_ids'], true ),
             'status' => $result['status'],
             'processed' => intval( $result['processed'] ),

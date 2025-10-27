@@ -1,8 +1,8 @@
 /**
- * Admin JavaScript for WP Gemini Content Generator
+ * WordPress.org Compliant Admin JavaScript
  *
- * @package WP_Gemini_Content_Generator
- * @since 2.0.0
+ * @package AI_Content_Master
+ * @since 1.0.0
  */
 
 (function($) {
@@ -19,7 +19,7 @@
      */
     function initContentGenerator() {
         // Generate content
-        $(document).on('click', '#wgc-generate-content', function() {
+        $(document).on('click', '#acm-generate-content', function() {
             var $button = $(this);
             var postId = $button.data('post-id');
             var nonce = $button.data('nonce');
@@ -28,7 +28,7 @@
         });
 
         // Generate meta description
-        $(document).on('click', '#wgc-generate-meta', function() {
+        $(document).on('click', '#acm-generate-meta', function() {
             var $button = $(this);
             var postId = $button.data('post-id');
             var nonce = $button.data('nonce');
@@ -37,7 +37,7 @@
         });
 
         // Generate tags
-        $(document).on('click', '#wgc-generate-tags', function() {
+        $(document).on('click', '#acm-generate-tags', function() {
             var $button = $(this);
             var postId = $button.data('post-id');
             var nonce = $button.data('nonce');
@@ -46,7 +46,7 @@
         });
 
         // Generate excerpt
-        $(document).on('click', '#wgc-generate-excerpt', function() {
+        $(document).on('click', '#acm-generate-excerpt', function() {
             var $button = $(this);
             var postId = $button.data('post-id');
             var nonce = $button.data('nonce');
@@ -55,7 +55,7 @@
         });
 
         // Generate all
-        $(document).on('click', '#wgc-generate-all', function() {
+        $(document).on('click', '#acm-generate-all', function() {
             var $button = $(this);
             var postId = $button.data('post-id');
             var nonce = $button.data('nonce');
@@ -68,7 +68,7 @@
      * Initialize bulk generator
      */
     function initBulkGenerator() {
-        $(document).on('click', '#wgc-bulk-generate', function() {
+        $(document).on('click', '#acm-bulk-generate', function() {
             var $button = $(this);
             var nonce = $button.data('nonce');
             
@@ -81,24 +81,32 @@
      */
     function generateContent(postId, nonce, $button) {
         setButtonLoading($button, true);
-        showStatus('loading', wgc.strings.generating_content || 'Generating content...');
+        showStatus('loading', acm.strings.generating_content || 'Generating content...');
 
         $.ajax({
-            url: wgc.ajax_url,
+            url: acm.ajax_url,
             type: 'POST',
             data: {
-                action: 'wgc_generate_content',
+                action: 'acm_generate_content',
                 post_id: postId,
                 nonce: nonce
             },
             success: function(response) {
                 if (response.success) {
                     showStatus('success', response.data.message);
+                    updateRemainingGenerations(response.data.remaining);
                     setTimeout(function() {
                         window.location.reload();
                     }, 2000);
                 } else {
-                    showStatus('error', response.data.message || 'Content generation failed');
+                    if (response.data.upgrade_url) {
+                        showStatus('error', response.data.message + ' Redirecting to upgrade page...');
+                        setTimeout(function() {
+                            window.open(response.data.upgrade_url, '_blank');
+                        }, 2000);
+                    } else {
+                        showStatus('error', response.data.message || 'Content generation failed');
+                    }
                 }
             },
             error: function() {
@@ -115,24 +123,32 @@
      */
     function generateMeta(postId, nonce, $button) {
         setButtonLoading($button, true);
-        showStatus('loading', wgc.strings.generating_meta || 'Generating meta description...');
+        showStatus('loading', acm.strings.generating_meta || 'Generating meta description...');
 
         $.ajax({
-            url: wgc.ajax_url,
+            url: acm.ajax_url,
             type: 'POST',
             data: {
-                action: 'wgc_generate_meta',
+                action: 'acm_generate_meta',
                 post_id: postId,
                 nonce: nonce
             },
             success: function(response) {
                 if (response.success) {
                     showStatus('success', response.data.message);
+                    updateRemainingGenerations(response.data.remaining);
                     setTimeout(function() {
                         window.location.reload();
                     }, 2000);
                 } else {
-                    showStatus('error', response.data.message || 'Meta description generation failed');
+                    if (response.data.upgrade_url) {
+                        showStatus('error', response.data.message + ' Redirecting to upgrade page...');
+                        setTimeout(function() {
+                            window.open(response.data.upgrade_url, '_blank');
+                        }, 2000);
+                    } else {
+                        showStatus('error', response.data.message || 'Meta description generation failed');
+                    }
                 }
             },
             error: function() {
@@ -149,24 +165,32 @@
      */
     function generateTags(postId, nonce, $button) {
         setButtonLoading($button, true);
-        showStatus('loading', wgc.strings.generating_tags || 'Generating tags...');
+        showStatus('loading', acm.strings.generating_tags || 'Generating tags...');
 
         $.ajax({
-            url: wgc.ajax_url,
+            url: acm.ajax_url,
             type: 'POST',
             data: {
-                action: 'wgc_generate_tags',
+                action: 'acm_generate_tags',
                 post_id: postId,
                 nonce: nonce
             },
             success: function(response) {
                 if (response.success) {
                     showStatus('success', response.data.message);
+                    updateRemainingGenerations(response.data.remaining);
                     setTimeout(function() {
                         window.location.reload();
                     }, 2000);
                 } else {
-                    showStatus('error', response.data.message || 'Tags generation failed');
+                    if (response.data.upgrade_url) {
+                        showStatus('error', response.data.message + ' Redirecting to upgrade page...');
+                        setTimeout(function() {
+                            window.open(response.data.upgrade_url, '_blank');
+                        }, 2000);
+                    } else {
+                        showStatus('error', response.data.message || 'Tags generation failed');
+                    }
                 }
             },
             error: function() {
@@ -183,24 +207,32 @@
      */
     function generateExcerpt(postId, nonce, $button) {
         setButtonLoading($button, true);
-        showStatus('loading', wgc.strings.generating_excerpt || 'Generating excerpt...');
+        showStatus('loading', acm.strings.generating_excerpt || 'Generating excerpt...');
 
         $.ajax({
-            url: wgc.ajax_url,
+            url: acm.ajax_url,
             type: 'POST',
             data: {
-                action: 'wgc_generate_excerpt',
+                action: 'acm_generate_excerpt',
                 post_id: postId,
                 nonce: nonce
             },
             success: function(response) {
                 if (response.success) {
                     showStatus('success', response.data.message);
+                    updateRemainingGenerations(response.data.remaining);
                     setTimeout(function() {
                         window.location.reload();
                     }, 2000);
                 } else {
-                    showStatus('error', response.data.message || 'Excerpt generation failed');
+                    if (response.data.upgrade_url) {
+                        showStatus('error', response.data.message + ' Redirecting to upgrade page...');
+                        setTimeout(function() {
+                            window.open(response.data.upgrade_url, '_blank');
+                        }, 2000);
+                    } else {
+                        showStatus('error', response.data.message || 'Excerpt generation failed');
+                    }
                 }
             },
             error: function() {
@@ -217,28 +249,39 @@
      */
     function generateAll(postId, nonce, $button) {
         setButtonLoading($button, true);
-        showStatus('loading', wgc.strings.generating_all || 'Generating all content...');
+        showStatus('loading', acm.strings.generating_all || 'Generating all content...');
 
         $.ajax({
-            url: wgc.ajax_url,
+            url: acm.ajax_url,
             type: 'POST',
             data: {
-                action: 'wgc_generate_all',
+                action: 'acm_generate_all',
                 post_id: postId,
                 nonce: nonce
             },
             success: function(response) {
                 if (response.success) {
                     showStatus('success', response.data.message);
+                    if (response.data.remaining !== undefined) {
+                        updateRemainingGenerations(response.data.remaining);
+                    }
                     setTimeout(function() {
                         window.location.reload();
                     }, 2000);
                 } else {
-                    showStatus('error', response.data.message || 'Content generation failed');
+                    if (response.data && response.data.upgrade_url) {
+                        showStatus('error', response.data.message + ' Redirecting to upgrade page...');
+                        setTimeout(function() {
+                            window.open(response.data.upgrade_url, '_blank');
+                        }, 2000);
+                    } else {
+                        showStatus('error', response.data ? response.data.message : 'Content generation failed');
+                    }
                 }
             },
-            error: function() {
-                showStatus('error', 'Network error occurred');
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+                showStatus('error', 'Network error occurred. Please try again.');
             },
             complete: function() {
                 setButtonLoading($button, false);
@@ -251,15 +294,15 @@
      */
     function startBulkGeneration(nonce, $button) {
         var formData = {
-            action: 'wgc_bulk_generate',
+            action: 'acm_bulk_generate',
             nonce: nonce,
             postTypes: [],
             generateContent: 0,
             generateMeta: 0,
             generateTags: 0,
             generateExcerpt: 0,
-            batchSize: $('#wgc-batch-size').val() || 5,
-            forceRegenerate: $('#wgc-force-regenerate').is(':checked') ? 1 : 0
+            batchSize: $('#acm-batch-size').val() || 5,
+            forceRegenerate: $('#acm-force-regenerate').is(':checked') ? 1 : 0
         };
 
         // Collect post types
@@ -290,7 +333,7 @@
         showBulkStatus('loading', 'Starting bulk generation...');
 
         $.ajax({
-            url: wgc.ajax_url,
+            url: acm.ajax_url,
             type: 'POST',
             data: formData,
             success: function(response) {
@@ -298,7 +341,14 @@
                     showBulkStatus('success', response.data.message);
                     monitorBulkJob(response.data.job_id, nonce);
                 } else {
-                    showBulkStatus('error', response.data.message || 'Bulk generation failed');
+                    if (response.data.upgrade_url) {
+                        showBulkStatus('error', response.data.message + ' Redirecting to upgrade page...');
+                        setTimeout(function() {
+                            window.open(response.data.upgrade_url, '_blank');
+                        }, 2000);
+                    } else {
+                        showBulkStatus('error', response.data.message || 'Bulk generation failed');
+                    }
                 }
             },
             error: function() {
@@ -324,10 +374,10 @@
             }
 
             $.ajax({
-                url: wgc.ajax_url,
+                url: acm.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'wgc_bulk_status',
+                    action: 'acm_bulk_status',
                     jobId: jobId,
                     nonce: nonce
                 },
@@ -381,7 +431,26 @@
             jobData.processed + ' / ' + jobData.total + ' posts processed (' + percentage + '%)' +
             '</div>';
 
-        $('#wgc-bulk-progress').html(progressHtml);
+        $('#acm-bulk-progress').html(progressHtml);
+    }
+
+    /**
+     * Update remaining generations display
+     */
+    function updateRemainingGenerations(remaining) {
+        // Update free generations banner if present
+        if ($('.acm-free-value').length > 0) {
+            $('.acm-free-value').eq(0).text(remaining + ' / 10');
+        }
+
+        // Update meta box credits info if present
+        if ($('.acm-credits-info-small').length > 0) {
+            if (remaining > 0) {
+                $('.acm-credits-info-small').html('<p>' + remaining + ' free generations remaining</p>');
+            } else {
+                $('.acm-credits-info-small').html('<p>No free generations remaining. <a href="#" target="_blank">Upgrade now</a></p>');
+            }
+        }
     }
 
     /**
@@ -399,7 +468,7 @@
      * Show status message
      */
     function showStatus(type, message) {
-        var $status = $('#wgc-status');
+        var $status = $('#acm-status');
         $status.removeClass('success error loading').addClass(type).text(message);
     }
 
@@ -407,7 +476,7 @@
      * Show bulk status message
      */
     function showBulkStatus(type, message) {
-        var $status = $('#wgc-bulk-status');
+        var $status = $('#acm-bulk-status');
         $status.removeClass('success error loading').addClass(type).text(message);
     }
 

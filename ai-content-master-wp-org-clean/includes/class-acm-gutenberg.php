@@ -1,9 +1,9 @@
 <?php
 /**
- * Gutenberg integration
+ * Gutenberg integration with freemium features
  *
- * @package WP_Gemini_Content_Generator
- * @since 2.0.0
+ * @package AI_Content_Master
+ * @since 1.0.0
  */
 
 // Prevent direct access
@@ -12,9 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Handle Gutenberg editor integration
+ * Handle Gutenberg editor integration with freemium features
  */
-class WGC_Gutenberg {
+class ACM_Gutenberg {
     
     /**
      * Constructor
@@ -29,23 +29,30 @@ class WGC_Gutenberg {
      */
     public function enqueue_assets() {
         wp_enqueue_script(
-            'wgc-gutenberg',
-            WGC_PLUGIN_URL . 'assets/js/gutenberg.js',
+            'acm-gutenberg',
+            ACM_PLUGIN_URL . 'assets/js/gutenberg.js',
             array( 'wp-element', 'wp-components', 'wp-editor', 'wp-data', 'wp-api-fetch' ),
-            WGC_VERSION,
+            ACM_VERSION,
             true
         );
         
         wp_enqueue_style(
-            'wgc-gutenberg',
-            WGC_PLUGIN_URL . 'assets/css/gutenberg.css',
+            'acm-gutenberg',
+            ACM_PLUGIN_URL . 'assets/css/gutenberg.css',
             array(),
-            WGC_VERSION
+            ACM_VERSION
         );
         
-        wp_localize_script( 'wgc-gutenberg', 'wgcGutenberg', array(
-            'restUrl' => rest_url( 'wp-gemini-content-generator/v1/' ),
+        wp_localize_script( 'acm-gutenberg', 'acmGutenberg', array(
+            'restUrl' => rest_url( 'ai-content-master/v1/' ),
             'nonce' => wp_create_nonce( 'wp_rest' ),
+            'creditsInfo' => ( new ACM_Credits() )->get_credits_info(),
+            'strings' => array(
+                'no_credits' => __( 'No credits remaining. Please purchase more credits.', 'ai-content-master' ),
+                'generating' => __( 'Generating...', 'ai-content-master' ),
+                'success' => __( 'Generated successfully!', 'ai-content-master' ),
+                'error' => __( 'Generation failed', 'ai-content-master' ),
+            ),
         ) );
     }
     
@@ -53,9 +60,15 @@ class WGC_Gutenberg {
      * Register REST API routes
      */
     public function register_rest_routes() {
-        register_rest_route( 'wp-gemini-content-generator/v1', '/generate', array(
+        register_rest_route( 'ai-content-master/v1', '/generate', array(
             'methods' => 'POST',
             'callback' => array( $this, 'rest_generate_content' ),
+            'permission_callback' => array( $this, 'rest_permission_check' ),
+        ) );
+        
+        register_rest_route( 'ai-content-master/v1', '/credits', array(
+            'methods' => 'GET',
+            'callback' => array( $this, 'rest_get_credits' ),
             'permission_callback' => array( $this, 'rest_permission_check' ),
         ) );
     }
@@ -76,15 +89,26 @@ class WGC_Gutenberg {
         $type = sanitize_text_field( $params['type'] ?? '' );
         
         if ( ! $post_id ) {
-            return new WP_Error( 'invalid_post_id', __( 'Invalid post ID', 'wp-gemini-content-generator' ), array( 'status' => 400 ) );
+            return new WP_Error( 'invalid_post_id', __( 'Invalid post ID', 'ai-content-master' ), array( 'status' => 400 ) );
         }
         
         $post = get_post( $post_id );
         if ( ! $post ) {
-            return new WP_Error( 'post_not_found', __( 'Post not found', 'wp-gemini-content-generator' ), array( 'status' => 404 ) );
+            return new WP_Error( 'post_not_found', __( 'Post not found', 'ai-content-master' ), array( 'status' => 404 ) );
         }
         
-        $api = new WGC_API();
+        // Check if user can generate content
+        $can_generate = ACM_Core::can_generate_content();
+        if ( ! $can_generate['can_generate'] ) {
+            return new WP_Error( 'no_credits', __( 'No credits remaining. Please purchase more credits.', 'ai-content-master' ), array( 'status' => 402 ) );
+        }
+        
+        // Consume generation
+        if ( ! ACM_Core::consume_generation() ) {
+            return new WP_Error( 'consume_failed', __( 'Failed to consume generation', 'ai-content-master' ), array( 'status' => 500 ) );
+        }
+        
+        $api = new ACM_API();
         
         switch ( $type ) {
             case 'content':
@@ -105,6 +129,7 @@ class WGC_Gutenberg {
                 return array(
                     'success' => true,
                     'content' => $sanitized_content,
+                    'credits_info' => ( new ACM_Credits() )->get_credits_info(),
                 );
                 
             case 'meta':
@@ -121,6 +146,7 @@ class WGC_Gutenberg {
                 return array(
                     'success' => true,
                     'meta' => $sanitized_meta,
+                    'credits_info' => ( new ACM_Credits() )->get_credits_info(),
                 );
                 
             case 'tags':
@@ -140,6 +166,7 @@ class WGC_Gutenberg {
                 return array(
                     'success' => true,
                     'tags' => $tags,
+                    'credits_info' => ( new ACM_Credits() )->get_credits_info(),
                 );
                 
             case 'excerpt':
@@ -160,10 +187,23 @@ class WGC_Gutenberg {
                 return array(
                     'success' => true,
                     'excerpt' => $sanitized_excerpt,
+                    'credits_info' => ( new ACM_Credits() )->get_credits_info(),
                 );
                 
             default:
-                return new WP_Error( 'invalid_type', __( 'Invalid generation type', 'wp-gemini-content-generator' ), array( 'status' => 400 ) );
+                return new WP_Error( 'invalid_type', __( 'Invalid generation type', 'ai-content-master' ), array( 'status' => 400 ) );
         }
+    }
+    
+    /**
+     * REST API: Get credits info
+     */
+    public function rest_get_credits( $request ) {
+        $credits_info = ( new ACM_Credits() )->get_credits_info();
+        
+        return array(
+            'success' => true,
+            'credits_info' => $credits_info,
+        );
     }
 }

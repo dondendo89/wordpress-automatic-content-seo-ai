@@ -1,25 +1,114 @@
 /**
- * Admin styles for WP Gemini Content Generator
+ * WordPress.org Compliant Admin styles
  *
- * @package WP_Gemini_Content_Generator
- * @since 2.0.0
+ * @package AI_Content_Master
+ * @since 1.0.0
  */
 
+/* Free Generations Banner */
+.acm-free-generations-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.acm-free-info {
+    display: flex;
+    gap: 30px;
+}
+
+.acm-free-item {
+    text-align: center;
+}
+
+.acm-free-label {
+    display: block;
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 5px;
+}
+
+.acm-free-value {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.acm-upgrade-actions .button {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+}
+
+.acm-upgrade-actions .button:hover {
+    background: rgba(255,255,255,0.3);
+    color: white;
+}
+
+/* Upgrade Information */
+.acm-upgrade-info {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 30px;
+}
+
+.acm-upgrade-info h2 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.acm-upgrade-info ul {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.acm-upgrade-info li {
+    margin-bottom: 8px;
+    color: #6c757d;
+}
+
 /* Meta box styling */
-#wgc-content-generator {
+#acm-content-generator {
     padding: 15px;
     background: #f9f9f9;
     border: 1px solid #ddd;
     border-radius: 4px;
 }
 
-.wgc-buttons {
+.acm-no-credits {
+    text-align: center;
+    padding: 20px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    color: #856404;
+}
+
+.acm-credits-info-small {
+    background: #e8f5e8;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 13px;
+    color: #155724;
+}
+
+.acm-buttons {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.wgc-buttons .button {
+.acm-buttons .button {
     width: 100%;
     text-align: center;
     padding: 8px 12px;
@@ -27,7 +116,7 @@
     line-height: 1.4;
 }
 
-#wgc-generate-all {
+#acm-generate-all {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
     color: white !important;
@@ -36,18 +125,18 @@
     margin-top: 8px;
 }
 
-#wgc-generate-all:hover {
+#acm-generate-all:hover {
     background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
     color: white !important;
 }
 
-#wgc-generate-all:disabled {
+#acm-generate-all:disabled {
     background: #ccc !important;
     color: #666 !important;
     cursor: not-allowed;
 }
 
-#wgc-status {
+#acm-status {
     margin-top: 15px;
     padding: 10px;
     border-radius: 4px;
@@ -55,69 +144,68 @@
     line-height: 1.4;
 }
 
-#wgc-status.success {
+#acm-status.success {
     background: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
 }
 
-#wgc-status.error {
+#acm-status.error {
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
 
-#wgc-status.loading {
+#acm-status.loading {
     background: #d1ecf1;
     color: #0c5460;
-    border: 1px solid #bee5eb;
 }
 
 /* Bulk generation styling */
-.wgc-bulk-generator {
+.acm-bulk-generator {
     max-width: 800px;
 }
 
-.wgc-bulk-generator .form-table th {
+.acm-bulk-generator .form-table th {
     width: 200px;
     padding: 15px 10px 15px 0;
     vertical-align: top;
 }
 
-.wgc-bulk-generator .form-table td {
+.acm-bulk-generator .form-table td {
     padding: 15px 10px;
 }
 
-.wgc-input {
+.acm-input {
     width: 100px;
 }
 
-#wgc-bulk-status {
+#acm-bulk-status {
     padding: 15px;
     border-radius: 4px;
     font-size: 14px;
     line-height: 1.5;
 }
 
-#wgc-bulk-status.success {
+#acm-bulk-status.success {
     background: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
 }
 
-#wgc-bulk-status.error {
+#acm-bulk-status.error {
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
 
-#wgc-bulk-status.loading {
+#acm-bulk-status.loading {
     background: #d1ecf1;
     color: #0c5460;
     border: 1px solid #bee5eb;
 }
 
-#wgc-bulk-progress {
+#acm-bulk-progress {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
     border-radius: 4px;
@@ -164,6 +252,7 @@
 .form-table input[type="text"],
 .form-table input[type="password"],
 .form-table input[type="number"],
+.form-table input[type="url"],
 .form-table select {
     width: 100%;
     max-width: 400px;
@@ -179,11 +268,22 @@
 
 /* Responsive design */
 @media (max-width: 782px) {
-    .wgc-buttons {
+    .acm-free-generations-banner {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .acm-free-info {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .acm-buttons {
         gap: 6px;
     }
     
-    .wgc-buttons .button {
+    .acm-buttons .button {
         padding: 6px 10px;
         font-size: 12px;
     }
@@ -196,6 +296,7 @@
     .form-table input[type="text"],
     .form-table input[type="password"],
     .form-table input[type="number"],
+    .form-table input[type="url"],
     .form-table select {
         width: 100%;
         max-width: none;
