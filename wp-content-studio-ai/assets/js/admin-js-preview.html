@@ -3,32 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>admin.js Preview</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding: 20px; }
-    .wrap { max-width: 740px; margin: 0 auto; }
-    .button { display: inline-block; padding: 8px 12px; background: #2271b1; color: #fff; border-radius: 3px; text-decoration: none; border: 0; cursor: pointer; }
-    .button[disabled] { opacity: 0.6; cursor: not-allowed; }
-    .spinner.is-active { display: inline-block; width: 16px; height: 16px; border: 2px solid #ccd0d4; border-top-color: #2271b1; border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .notice { border-left: 4px solid; padding: 10px; margin: 10px 0; background: #fff; }
-    .notice-success { border-color: #46b450; }
-    .notice-error { border-color: #dc3232; }
-    .notice .notice-dismiss { float: right; border: 0; background: transparent; cursor: pointer; }
-    #wgc-preview { display: none; margin-top: 16px; }
-    #wgc-preview-content { border: 1px solid #ccd0d4; padding: 10px; border-radius: 3px; }
-  </style>
+  <title>Admin JS Preview</title>
 </head>
 <body>
-  <div class="wrap">
-    <h1>admin.js Inline Notice Preview</h1>
-    <p>This lightweight preview lets you verify inline notices without WordPress.</p>
+  <div class="wrap" style="padding: 20px;">
+    <h1>Content Studio AI – Admin JS Preview</h1>
 
     <button class="button button-primary wgc-generate" data-post-id="123" data-nonce="preview-nonce">Generate</button>
 
     <div id="wgc-preview">
       <h2>Preview</h2>
       <div id="wgc-preview-content"></div>
+    </div>
+
+    <!-- Bulk UI Preview -->
+    <div id="wgc-bulk-ui" style="margin-top: 20px;">
+      <h2>Bulk Generation (Preview)</h2>
+      <p><label>Batch size (per request): <input id="wgc-batch-size" type="number" min="1" max="20" value="5" /></label></p>
+      <p><label for="wgc-bulk-post-types"><strong>Select post types to process:</strong></label></p>
+      <select id="wgc-bulk-post-types" multiple size="6" style="min-width: 280px; max-width: 100%;">
+        <option value="post">Posts (post)</option>
+        <option value="page">Pages (page)</option>
+        <option value="product">Products (product)</option>
+      </select>
+      <p><label for="wgc-bulk-mode"><strong>What to generate:</strong></label><br />
+        <select id="wgc-bulk-mode" style="min-width: 280px;">
+          <option value="all">Generate All (Content + Meta + Tags)</option>
+          <option value="content">Content Only</option>
+          <option value="meta">Meta Descriptions Only</option>
+          <option value="tags">Tags Only</option>
+        </select>
+      </p>
+      <p><label><input type="checkbox" id="wgc-force-regenerate" /> Force regenerate (include already processed posts)</label></p>
+      <p><button class="button button-primary" id="wgc-bulk-generate" data-nonce="preview-nonce">Run Bulk Generation</button></p>
     </div>
 
     <div id="wgc-bulk-status" style="margin-top: 20px;"></div>

@@ -341,7 +341,7 @@ class WPGeminiContentGenerator {
 
 		echo '<hr />';
 		echo '<h2>' . esc_html__( 'Bulk Update Posts/Pages', 'wp-content-studio-ai' ) . '</h2>';
-		echo '<p>' . esc_html__( 'Generate and insert long descriptions for multiple posts and pages. The tool will skip items already processed.', 'wp-content-studio-ai' ) . '</p>';
+		echo '<p>' . esc_html__( 'Generate content, meta descriptions, and tags for multiple posts and pages. The tool will skip items already processed unless you force regenerate.', 'wp-content-studio-ai' ) . '</p>';
 		echo '<p><label>' . esc_html__( 'Batch size (per request):', 'wp-content-studio-ai' ) . ' <input id="wgc-batch-size" type="number" min="1" max="20" value="5" /></label></p>';
 
 		// Bulk post types selector (multi-select)
@@ -353,6 +353,15 @@ class WPGeminiContentGenerator {
 		}
 		echo '</select>';
 		echo '<p class="description">' . esc_html__( 'Hold Cmd/Ctrl to select multiple types. If none selected, the saved setting under "Enable on Post Types" will be used.', 'wp-content-studio-ai' ) . '</p>';
+
+		// What to generate selector
+		echo '<p><label for="wgc-bulk-mode"><strong>' . esc_html__( 'What to generate:', 'wp-content-studio-ai' ) . '</strong></label><br />';
+		echo '<select id="wgc-bulk-mode" style="min-width: 280px;">';
+		echo '<option value="all">' . esc_html__( 'Generate All (Content + Meta + Tags)', 'wp-content-studio-ai' ) . '</option>';
+		echo '<option value="content">' . esc_html__( 'Content Only', 'wp-content-studio-ai' ) . '</option>';
+		echo '<option value="meta">' . esc_html__( 'Meta Descriptions Only', 'wp-content-studio-ai' ) . '</option>';
+		echo '<option value="tags">' . esc_html__( 'Tags Only', 'wp-content-studio-ai' ) . '</option>';
+		echo '</select></p>';
 		
 		echo '<p><label><input type="checkbox" id="wgc-force-regenerate" /> ' . esc_html__( 'Force regenerate (include already processed posts)', 'wp-content-studio-ai' ) . '</label></p>';
 		echo '<p><button class="button button-primary" id="wgc-bulk-generate" data-nonce="' . esc_attr( $nonce ) . '">' . esc_html__( 'Run Bulk Generation', 'wp-content-studio-ai' ) . '</button> <span id="wgc-bulk-status"></span></p>';
@@ -792,7 +801,11 @@ Topic: ';
 		check_ajax_referer( 'wgc_bulk_nonce', 'nonce' );
 
 		$batch_size = isset( $_POST['batchSize'] ) ? max( 1, min( 20, (int) $_POST['batchSize'] ) ) : 5;
-		$force_regenerate = isset( $_POST['forceRegenerate'] ) && $_POST['forceRegenerate'] === 'true';
+		$force_regenerate = isset( $_POST['forceRegenerate'] ) && ( $_POST['forceRegenerate'] === 'true' || $_POST['forceRegenerate'] === true );
+		$mode = isset( $_POST['mode'] ) ? sanitize_text_field( $_POST['mode'] ) : 'all';
+		if ( ! in_array( $mode, [ 'all', 'content', 'meta', 'tags' ], true ) ) {
+			$mode = 'all';
+		}
 
 		// Use selected post types from request, falling back to plugin option
 		$requested_types = isset( $_POST['postTypes'] ) ? (array) $_POST['postTypes'] : [];
@@ -804,32 +817,52 @@ Topic: ';
 			$post_types = array_values( array_intersect( (array) $post_types, $public_types ) );
 		}
 
-		// Get total posts to process - first try without meta query to see all posts
+		// Count all selected posts
 		$args_all = [
 			'post_type'      => $post_types,
 			'post_status'    => 'publish',
 			'posts_per_page' => -1,
+			'fields'         => 'ids',
 		];
 		$all_query = new WP_Query( $args_all );
 		$all_posts = $all_query->found_posts;
-		
-		// Now get posts without generated content (or all if force regenerate)
-		$args = [
-			'post_type'      => $post_types,
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-		];
-		
+
+		// Derive total by mode (when possible)
+		$total_posts = $all_posts;
 		if ( ! $force_regenerate ) {
-			$args['meta_query'] = [
-				'relation' => 'OR',
-				[ 'key' => '_wgc_generated', 'compare' => 'NOT EXISTS' ],
-				[ 'key' => '_wgc_generated', 'value' => '', 'compare' => '=' ],
-			];
+			if ( $mode === 'content' ) {
+				$args = [
+					'post_type'      => $post_types,
+					'post_status'    => 'publish',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+					'meta_query'     => [
+						'relation' => 'OR',
+						[ 'key' => '_wgc_generated', 'compare' => 'NOT EXISTS' ],
+						[ 'key' => '_wgc_generated', 'value' => '', 'compare' => '=' ],
+					],
+				];
+				$q = new WP_Query( $args );
+				$total_posts = $q->found_posts;
+			} elseif ( $mode === 'meta' ) {
+				$args = [
+					'post_type'      => $post_types,
+					'post_status'    => 'publish',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+					'meta_query'     => [
+						'relation' => 'OR',
+						[ 'key' => '_wgc_meta_description', 'compare' => 'NOT EXISTS' ],
+						[ 'key' => '_wgc_meta_description', 'value' => '', 'compare' => '=' ],
+					],
+				];
+				$q = new WP_Query( $args );
+				$total_posts = $q->found_posts;
+			} else {
+				// tags or all: keep total as all posts
+				$total_posts = $all_posts;
+			}
 		}
-		
-		$total_query = new WP_Query( $args );
-		$total_posts = $total_query->found_posts;
 
 		if ( $total_posts === 0 ) {
 			$debug_message = sprintf( 
@@ -847,6 +880,7 @@ Topic: ';
 					'all_posts' => $all_posts,
 					'post_types' => $post_types,
 					'selected_types' => $requested_types,
+					'mode' => $mode,
 				],
 			] );
 		}
@@ -862,17 +896,21 @@ Topic: ';
 			'status' => 'running',
 			'started_at' => current_time( 'mysql' ),
 			'force_regenerate' => $force_regenerate,
+			'mode' => $mode,
 		] );
 
-		// Schedule the job
+		// Schedule the job and process first batch immediately (cron fallback)
 		wp_schedule_single_event( time(), 'wgc_bulk_process_job', [ $job_id ] );
+		$this->process_bulk_job( $job_id );
+
+		$job_data_after = get_option( 'wgc_bulk_job_' . $job_id );
 
 		wp_send_json_success( [
 			'job_started' => true,
 			'job_id' => $job_id,
 			'message' => __( 'Bulk generation job started. Processing in background...', 'wp-content-studio-ai' ),
 			'total' => $total_posts,
-			'processed' => 0,
+			'processed' => isset( $job_data_after['processed'] ) ? (int) $job_data_after['processed'] : 0,
 		] );
 	}
 
@@ -929,8 +967,10 @@ Topic: ';
 
 		$post_types = $job_data['post_types'];
 		$batch_size = $job_data['batch_size'];
-		$processed = $job_data['processed'];
+		$processed = isset( $job_data['processed'] ) ? (int) $job_data['processed'] : 0;
 		$errors = $job_data['errors'];
+		$force = ! empty( $job_data['force_regenerate'] );
+		$mode  = isset( $job_data['mode'] ) ? $job_data['mode'] : 'all';
 
 		// Get next batch of posts
 		$args = [
@@ -942,47 +982,115 @@ Topic: ';
 			'order'          => 'DESC',
 		];
 		
-		// Only add meta query if not force regenerating
-		if ( ! isset( $job_data['force_regenerate'] ) || ! $job_data['force_regenerate'] ) {
-			$args['meta_query'] = [
-				'relation' => 'OR',
-				[ 'key' => '_wgc_generated', 'compare' => 'NOT EXISTS' ],
-				[ 'key' => '_wgc_generated', 'value' => '', 'compare' => '=' ],
-			];
+		// Add meta filtering per mode when not forcing regeneration
+		if ( ! $force ) {
+			if ( $mode === 'content' ) {
+				$args['meta_query'] = [
+					'relation' => 'OR',
+					[ 'key' => '_wgc_generated', 'compare' => 'NOT EXISTS' ],
+					[ 'key' => '_wgc_generated', 'value' => '', 'compare' => '=' ],
+				];
+			} elseif ( $mode === 'meta' ) {
+				$args['meta_query'] = [
+					'relation' => 'OR',
+					[ 'key' => '_wgc_meta_description', 'compare' => 'NOT EXISTS' ],
+					[ 'key' => '_wgc_meta_description', 'value' => '', 'compare' => '=' ],
+				];
+			}
 		}
 
 		$q = new WP_Query( $args );
-		$batch_processed = 0;
+		$batch_scanned = 0;
 
 		if ( $q->have_posts() ) {
 			foreach ( $q->posts as $post ) {
-				$title = get_the_title( $post );
-				if ( empty( $title ) ) {
-					continue;
+				$batch_scanned++;
+				$ran_any = false;
+
+				$do_content = ( $mode === 'all' || $mode === 'content' );
+				$do_meta    = ( $mode === 'all' || $mode === 'meta' );
+				$do_tags    = ( $mode === 'all' || $mode === 'tags' );
+
+				if ( $do_content ) {
+					$already = get_post_meta( (int) $post->ID, '_wgc_generated', true );
+					if ( $force || empty( $already ) ) {
+						$title = get_the_title( $post );
+						if ( ! empty( $title ) ) {
+							$prompt = $this->build_prompt_for_title( $title, (int) $post->ID );
+							$json   = $this->call_gemini_generate( $prompt );
+							if ( is_wp_error( $json ) ) {
+								$errors[] = $json->get_error_message();
+							} else {
+								$text = $this->extract_text_from_gemini_response( $json );
+								if ( strlen( $text ) < 2000 ) {
+									$errors[] = sprintf( __( 'Post %d generated text too short.', 'wp-content-studio-ai' ), (int) $post->ID );
+								} else {
+									$update = $this->append_content_to_post( (int) $post->ID, $text );
+									if ( is_wp_error( $update ) ) {
+										$errors[] = $update->get_error_message();
+									} else {
+										$ran_any = true;
+									}
+								}
+							}
+						}
+					}
 				}
-				$prompt = $this->build_prompt_for_title( $title, (int) $post->ID );
-				$json   = $this->call_gemini_generate( $prompt );
-				if ( is_wp_error( $json ) ) {
-					$errors[] = $json->get_error_message();
-					continue;
+
+				if ( $do_meta ) {
+					$existing_meta = get_post_meta( (int) $post->ID, '_wgc_meta_description', true );
+					if ( $force || empty( $existing_meta ) ) {
+						$language = get_option( WGC_OPTION_LANGUAGE, 'en' );
+						$language_names = [ 'en'=>'English','it'=>'Italian','es'=>'Spanish','fr'=>'French','de'=>'German','pt'=>'Portuguese','ru'=>'Russian','ja'=>'Japanese','ko'=>'Korean','zh'=>'Chinese','ar'=>'Arabic','hi'=>'Hindi' ];
+						$language_name = $language_names[ $language ] ?? 'English';
+						$meta_prompt = 'You are an expert SEO copywriter. Write a concise meta description (max 160 characters) in ' . $language_name . ' for the following page title. It must be a single sentence, no quotes, no markdown, compelling and keyword-rich. Title: "' . get_the_title( $post ) . '"';
+						$json   = $this->call_gemini_generate( $meta_prompt );
+						if ( is_wp_error( $json ) ) {
+							$errors[] = $json->get_error_message();
+						} else {
+							$text = $this->extract_text_from_gemini_response( $json );
+							$text = wp_strip_all_tags( $text );
+							$text = trim( preg_replace( '/\s+/', ' ', $text ) );
+							if ( strlen( $text ) > 160 ) { $text = mb_substr( $text, 0, 160 ); }
+							update_post_meta( (int) $post->ID, '_wgc_meta_description', $text );
+							if ( defined( 'WPSEO_VERSION' ) ) { update_post_meta( (int) $post->ID, '_yoast_wpseo_metadesc', $text ); }
+							$ran_any = true;
+						}
+					}
 				}
-				$text = $this->extract_text_from_gemini_response( $json );
-				if ( strlen( $text ) < 2000 ) {
-					$errors[] = sprintf( /* translators: %d: Post ID */ __( 'Post %d generated text too short.', 'wp-content-studio-ai' ), (int) $post->ID );
-					continue;
+
+				if ( $do_tags ) {
+					$has_existing_tags = false;
+					if ( ! $force ) {
+						$existing_terms = wp_get_post_terms( (int) $post->ID, 'post_tag', [ 'fields' => 'ids' ] );
+						$has_existing_tags = ! empty( $existing_terms );
+					}
+					if ( $force || ! $has_existing_tags ) {
+						$language = get_option( WGC_OPTION_LANGUAGE, 'en' );
+						$language_names = [ 'en'=>'English','it'=>'Italian','es'=>'Spanish','fr'=>'French','de'=>'German','pt'=>'Portuguese','ru'=>'Russian','ja'=>'Japanese','ko'=>'Korean','zh'=>'Chinese','ar'=>'Arabic','hi'=>'Hindi' ];
+						$language_name = $language_names[ $language ] ?? 'English';
+						$tags_prompt = 'Suggest 5 SEO-friendly tags in ' . $language_name . ' for this title. Return only comma-separated keywords, no extra text. Title: "' . get_the_title( $post ) . '"';
+						$json   = $this->call_gemini_generate( $tags_prompt );
+						if ( is_wp_error( $json ) ) {
+							$errors[] = $json->get_error_message();
+						} else {
+							$text = $this->extract_text_from_gemini_response( $json );
+							$raw = strtolower( wp_strip_all_tags( $text ) );
+							$parts = array_filter( array_map( 'trim', preg_split( '/[,\n]+/', $raw ) ) );
+							$tags = [];
+							foreach ( $parts as $p ) { $tags[] = sanitize_text_field( $p ); }
+							if ( ! empty( $tags ) ) { wp_set_post_tags( (int) $post->ID, $tags, true ); $ran_any = true; } else { $errors[] = sprintf( __( 'No tags generated for post %d.', 'wp-content-studio-ai' ), (int) $post->ID ); }
+						}
+					}
 				}
-				$update = $this->append_content_to_post( (int) $post->ID, $text );
-				if ( is_wp_error( $update ) ) {
-					$errors[] = $update->get_error_message();
-					continue;
-				}
-				$batch_processed++;
+
+				// If we wanted to track updated count separately, we could, but for progress we use scanned count
 			}
 		}
 
 		// Update job data
-		$new_processed = $processed + $batch_processed;
-		$is_complete = $new_processed >= $job_data['total_posts'] || $batch_processed === 0;
+		$new_processed = $processed + $batch_scanned;
+		$is_complete = $new_processed >= (int) $job_data['total_posts'] || $batch_scanned === 0;
 
 		$job_data['processed'] = $new_processed;
 		$job_data['errors'] = $errors;

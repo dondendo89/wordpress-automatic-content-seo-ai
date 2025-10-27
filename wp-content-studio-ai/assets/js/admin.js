@@ -125,6 +125,7 @@
 		var batchSize = parseInt($('#wgc-batch-size').val(), 10) || 5;
 		var postTypes = ($('#wgc-bulk-post-types').val() || []);
 		var forceRegenerate = $('#wgc-force-regenerate').is(':checked');
+		var mode = $('#wgc-bulk-mode').val() || 'all';
 		var $status = $('#wgc-bulk-status');
 		
 		// Clear any existing job monitoring
@@ -136,7 +137,7 @@
 		$btn.prop('disabled', true).html('<span class="spinner is-active" style="float: none; margin: 0 5px 0 0;"></span>' + ((WGC && WGC.i18n && WGC.i18n.generating) || 'Starting...'));
 		$status.text('');
 
-		postAjax('wgc_bulk_generate', { nonce: nonce, batchSize: batchSize, postTypes: postTypes, forceRegenerate: forceRegenerate })
+		postAjax('wgc_bulk_generate', { nonce: nonce, batchSize: batchSize, postTypes: postTypes, forceRegenerate: forceRegenerate, mode: mode })
 			.done(function(res){
 				if(res && res.success){
 					if (res.data.job_started) {
